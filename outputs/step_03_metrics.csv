@@ -1,0 +1,2 @@
+model,MAE,RMSE,R2,MAE_active,R2_active
+LinearRegression,9708.0,17101.0,0.4182,15185.0,0.274

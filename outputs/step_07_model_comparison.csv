@@ -1,0 +1,5 @@
+Model,MAE,RMSE,R²,MAE (aktivní zákazníci),R² (aktivní zákazníci)
+Lineární regrese (baseline),9708,17101,0.4182,15185,0.274
+Random Forest (tuned),8406,16212,0.4771,14153,0.3276
+XGBoost (tuned)  ✅ vítěz,8172,15512,0.5213,13888,0.3832
+— Logistická regrese (klasifikace) —,—,—,0.9101,ROC-AUC,—

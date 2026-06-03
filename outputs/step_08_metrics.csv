@@ -1,0 +1,2 @@
+model,roc_auc,f1,accuracy,precision,recall
+XGBoost_Churn,0.8832,0.7463,0.7976,0.8065,0.6944
