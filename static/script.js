@@ -13,6 +13,10 @@ let syncedAccounts = new Set();
 let pendingCampaigns = new Set();
 let salesforceSyncLogs = [];
 
+// Segment filter state
+let segmentFilterIds = null;
+let segmentFilterName = '';
+
 // CFO overview variables
 let cfoCohortData = null;
 let cfoYearlyHistory = null;
@@ -21,12 +25,8 @@ let cfoChurnRateVal = 0;
 // Format currency
 function formatCurrency(value) {
     if (value === null || value === undefined) return 'N/A';
-    return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-    }).format(value);
+    const formattedNum = Math.round(value).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    return `${formattedNum} Kč`;
 }
 
 // Format number
@@ -144,6 +144,8 @@ async function initializeLoadedState() {
             updateStats(result.stats);
             createCharts();
             populateMigrations();
+            loadSegments();
+            loadModelStatus();
         }
     } catch (e) {
         console.error("Error auto-initializing stats:", e);
@@ -160,6 +162,11 @@ function applyFilters() {
     const priority = document.getElementById('priorityFilter').value;
 
     filteredAccounts = accountsData.filter(account => {
+        // Segment filter (applied first — narrows the base set)
+        if (segmentFilterIds !== null) {
+            if (!segmentFilterIds.includes(account.account_external_id)) return false;
+        }
+
         // Search filter
         const extId = (account.account_external_id || '').toLowerCase();
         const name = (account.Name || '').toLowerCase();
@@ -238,7 +245,7 @@ function populateTable() {
         let matchClass = 'value-neutral';
         if (account.clv_2025_predicted !== undefined && account.clv_2025_predicted !== null) {
             const tierMatch = account.tier_correct;
-            matchIcon = tierMatch ? '✅' : '❌';
+            matchIcon = tierMatch ? 'Match' : 'Mismatch';
             matchClass = tierMatch ? 'value-positive' : 'value-negative';
         }
 
@@ -424,20 +431,21 @@ function showAccountDetails(account) {
             reasonText += `Proactive outreach is critical to protect this customer's revenue.`;
 
             aiRecommendationHTML = `
-                <div class="einstein-rec-card" style="border-color: #fecdd3; background: linear-gradient(135deg, #fff5f5 0%, #ffe4e6 100%);">
-                    <div class="einstein-header" style="background-color: var(--slds-color-error);">
-                        <span class="einstein-icon">⚠️</span>
+                <div class="einstein-rec-card">
+                    <div class="einstein-header" style="background-color: var(--sf-error);">
+                        <span class="einstein-icon"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></span>
                         <span>Risk Alert</span>
                     </div>
                     <div class="einstein-body">
                         <div class="einstein-title" style="color: #991b1b;">Immediate Retention Outreach Required</div>
                         <div class="einstein-text" style="color: #991b1b;">${reasonText}</div>
-                        <div class="einstein-impact" style="border-color: #fca5a5;">
+                        <div class="einstein-impact" style="border-color: var(--sf-border);">
                             <span class="einstein-impact-label">Revenue Risk Exposure:</span>
                             <span class="einstein-impact-val downgrade">${formatCurrency(potentialValue)}</span>
                         </div>
-                        <button class="einstein-btn" style="background-color: var(--slds-color-error);" onclick="alert('Action Triggered: Scheduling immediate retention outreach for ${account.Name}')">
-                            🔔 Create Urgent Task
+                        <button class="einstein-btn" style="background-color: var(--sf-error); border-color: var(--sf-error);" 
+                            onclick="triggerWorkflow('${account.account_external_id}', '${account.Name.replace(/'/g,"&apos;")}', 'Urgent Retention Task', 'High churn risk — immediate outreach required')">
+                            Create Urgent Task
                         </button>
                     </div>
                 </div>
@@ -459,20 +467,21 @@ function showAccountDetails(account) {
             reasonText += `Targeted campaign outreach is recommended to rebuild customer engagement.`;
 
             aiRecommendationHTML = `
-                <div class="einstein-rec-card" style="border-color: #fef08a; background: linear-gradient(135deg, #fefce8 0%, #fef9c3 100%);">
-                    <div class="einstein-header" style="background-color: var(--slds-color-warning);">
-                        <span class="einstein-icon">⚠️</span>
+                <div class="einstein-rec-card">
+                    <div class="einstein-header" style="background-color: var(--sf-warning);">
+                        <span class="einstein-icon"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></span>
                         <span>Risk Alert</span>
                     </div>
                     <div class="einstein-body">
                         <div class="einstein-title" style="color: #854d0e;">Targeted Retention Campaign Recommended</div>
                         <div class="einstein-text" style="color: #854d0e;">${reasonText}</div>
-                        <div class="einstein-impact" style="border-color: #fde047;">
+                        <div class="einstein-impact" style="border-color: var(--sf-border);">
                             <span class="einstein-impact-label">Revenue Risk Exposure:</span>
                             <span class="einstein-impact-val downgrade">${formatCurrency(potentialValue)}</span>
                         </div>
-                        <button class="einstein-btn" style="background-color: var(--slds-color-warning);" onclick="alert('Action Triggered: Scheduling retention campaign for ${account.Name}')">
-                            🔔 Schedule Campaign Outreach
+                        <button class="einstein-btn" style="background-color: var(--sf-warning); border-color: var(--sf-warning);" 
+                            onclick="triggerWorkflow('${account.account_external_id}', '${account.Name.replace(/'/g,"&apos;")}', 'Targeted Campaign', 'Medium churn risk — enrol in retention campaign')">
+                            Schedule Campaign Outreach
                         </button>
                     </div>
                 </div>
@@ -499,19 +508,20 @@ function showAccountDetails(account) {
 
                 aiRecommendationHTML = `
                     <div class="einstein-rec-card">
-                        <div class="einstein-header">
-                            <span class="einstein-icon">🤖</span>
+                        <div class="einstein-header" style="background-color: var(--sf-success);">
+                            <span class="einstein-icon"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="15" x2="23" y2="15"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="15" x2="4" y2="15"></line></svg></span>
                             <span>Next Best Action</span>
                         </div>
                         <div class="einstein-body">
                             <div class="einstein-title">Recommend Loyalty Tier Upgrade</div>
                             <div class="einstein-text">${reasonText}</div>
-                            <div class="einstein-impact">
+                            <div class="einstein-impact" style="border-color: var(--sf-border);">
                                 <span class="einstein-impact-label">Projected Growth Impact:</span>
                                 <span class="einstein-impact-val upsell">+${formatCurrency(potentialValue)}</span>
                             </div>
-                            <button class="einstein-btn" onclick="alert('Action Triggered: Sending Loyalty Upgrade Campaign to ${account.Name}')">
-                                🚀 Send Tier Upgrade Campaign
+                            <button class="einstein-btn" style="background-color: var(--sf-success); border-color: var(--sf-success);" 
+                                onclick="triggerWorkflow('${account.account_external_id}', '${account.Name.replace(/'/g,"&apos;")}', 'Tier Upgrade Offer', 'Loyalty tier upgrade campaign sent — ${account.actual_tier} → ${suggestedTier}')">
+                                Send Tier Upgrade Campaign
                             </button>
                         </div>
                     </div>
@@ -531,20 +541,21 @@ function showAccountDetails(account) {
                 reasonText += `. Proactive outreach is recommended to protect this account's historical revenue.`;
 
                 aiRecommendationHTML = `
-                    <div class="einstein-rec-card" style="border-color: #fecdd3; background: linear-gradient(135deg, #fff5f5 0%, #ffe4e6 100%);">
-                        <div class="einstein-header" style="background-color: var(--slds-color-warning);">
-                            <span class="einstein-icon">⚠️</span>
+                    <div class="einstein-rec-card">
+                        <div class="einstein-header" style="background-color: var(--sf-error);">
+                            <span class="einstein-icon"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></span>
                             <span>Risk Alert</span>
                         </div>
                         <div class="einstein-body">
                             <div class="einstein-title" style="color: #991b1b;">Loyalty Tier Downgrade Risk</div>
                             <div class="einstein-text" style="color: #991b1b;">${reasonText}</div>
-                            <div class="einstein-impact" style="border-color: #fca5a5;">
+                            <div class="einstein-impact" style="border-color: var(--sf-border);">
                                 <span class="einstein-impact-label">Revenue Risk Exposure:</span>
                                 <span class="einstein-impact-val downgrade">${formatCurrency(potentialValue)}</span>
                             </div>
-                            <button class="einstein-btn" style="background-color: var(--slds-color-warning);" onclick="alert('Action Triggered: Scheduling account review for ${account.Name}')">
-                                🔔 Create Review Task
+                            <button class="einstein-btn" style="background-color: var(--sf-warning); border-color: var(--sf-warning);" 
+                                onclick="triggerWorkflow('${account.account_external_id}', '${account.Name.replace(/'/g,"&apos;")}', 'Account Review Task', 'Tier downgrade risk — ${account.actual_tier} → ${suggestedTier}')">
+                                Create Review Task
                             </button>
                         </div>
                     </div>
@@ -555,14 +566,15 @@ function showAccountDetails(account) {
             aiRecommendationHTML = `
                 <div class="einstein-rec-card">
                     <div class="einstein-header">
-                        <span class="einstein-icon">🤖</span>
+                        <span class="einstein-icon"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="15" x2="23" y2="15"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="15" x2="4" y2="15"></line></svg></span>
                         <span>Recommendation</span>
                     </div>
                     <div class="einstein-body">
                         <div class="einstein-title">Maintain Active Engagement</div>
-                        <div class="einstein-text">Loyalty tiers match predictions. The customer is currently placed in their correct tier of <strong>${suggestedTier}</strong>. Continue scheduled marketing cycles.</div>
-                        <button class="einstein-btn" onclick="alert('Standard touchpoint confirmed.')">
-                            ✨ Log Client Check-in
+                        <div class="einstein-text">Loyalty tiers match predictions. The customer is correctly placed in <strong>${suggestedTier}</strong>. Continue scheduled marketing cycles.</div>
+                        <button class="einstein-btn" 
+                            onclick="triggerWorkflow('${account.account_external_id}', '${account.Name.replace(/'/g,"&apos;")}', 'Client Check-in', 'Routine touchpoint logged')">
+                            Log Client Check-in
                         </button>
                     </div>
                 </div>
@@ -575,13 +587,13 @@ function showAccountDetails(account) {
             let priorityText = 'Maintain';
             if (account.churn_priority === 'Immediate Retention') {
                 badgeClass = 'immediate';
-                priorityText = '🔴 Immediate Retention Outreach';
+                priorityText = 'Immediate Retention Outreach';
             } else if (account.churn_priority === 'Targeted Campaign') {
                 badgeClass = 'campaign';
-                priorityText = '🟡 Targeted Retention Campaign';
+                priorityText = 'Targeted Retention Campaign';
             } else if (account.churn_priority === 'Maintain') {
                 badgeClass = 'maintain';
-                priorityText = '🟢 Maintain Relationship';
+                priorityText = 'Maintain Relationship';
             }
             
             const churnPercent = account.churn_probability ? `${(account.churn_probability * 100).toFixed(0)}%` : 'N/A';
@@ -616,7 +628,7 @@ function showAccountDetails(account) {
         simulatorHTML = `
             <div class="record-section simulator-panel">
                 <div class="record-section-title simulator-header">
-                    <span class="einstein-icon">🤖</span>
+                    <span class="einstein-icon"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="15" x2="23" y2="15"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="15" x2="4" y2="15"></line></svg></span>
                     <span>Next-Value Simulator</span>
                 </div>
                 <div class="simulator-body">
@@ -652,7 +664,7 @@ function showAccountDetails(account) {
                         <input type="range" class="simulator-slider" id="simRecencySlider" min="0" max="365" value="${recencyRaw}">
                     </div>
                     <button class="einstein-btn" style="background-color: var(--slds-color-success); margin-top: 5px;" id="runSimulationBtn">
-                        🚀 Run XGBoost Simulation
+                        Run XGBoost Simulation
                     </button>
                     <div class="simulator-result-box" id="simulatorResultBox" style="display: none;">
                         <span class="simulator-result-label">Simulated CLV:</span>
@@ -692,6 +704,9 @@ function showAccountDetails(account) {
                 </div>
             </div>
         </div>
+
+        <!-- XAI Explanation Block (populated async) -->
+        ${predictedClv !== null ? '<div id="xaiExplanationBlock"></div>' : ''}
 
         <!-- Churn Risk details -->
         ${churnRiskHTML}
@@ -807,7 +822,7 @@ function showAccountDetails(account) {
                 });
                 const result = await response.json();
                 
-                btn.textContent = '🚀 Run XGBoost Simulation';
+                btn.textContent = 'Run XGBoost Simulation';
                 btn.disabled = false;
 
                 if (result.success) {
@@ -836,6 +851,11 @@ function showAccountDetails(account) {
                 alert("Simulation error.");
             }
         });
+    }
+
+    // Load XAI explanation asynchronously if predictions exist
+    if (predictedClv !== null && account.account_external_id) {
+        renderXAIExplanation(account.account_external_id);
     }
 }
 
@@ -875,6 +895,10 @@ async function runPrediction() {
 
             // Populate tier migrations
             populateMigrations();
+
+            // Load segments + model status
+            loadSegments();
+            loadModelStatus();
 
             // Enable export button
             document.getElementById('exportBtn').disabled = false;
@@ -1018,7 +1042,7 @@ function createCharts() {
                     position: 'bottom',
                     title: {
                         display: true,
-                        text: 'Actual CLV 2025 ($)',
+                        text: 'Actual CLV 2025 (Kč)',
                         font: { weight: 'bold', size: 10 }
                     },
                     grid: { color: '#f3f3f2' }
@@ -1026,7 +1050,7 @@ function createCharts() {
                 y: {
                     title: {
                         display: true,
-                        text: 'Predicted CLV 2025 ($)',
+                        text: 'Predicted CLV 2025 (Kč)',
                         font: { weight: 'bold', size: 10 }
                     },
                     grid: { color: '#f3f3f2' }
@@ -1292,21 +1316,19 @@ function createCharts() {
         charts.tier = new Chart(tierCtx, {
             type: 'bar',
             data: {
-                labels: ['Gold', 'Silver', 'Bronze', 'Unknown'],
+                labels: ['Gold', 'Silver', 'Bronze'],
                 datasets: [{
                     label: 'Customers',
-                    data: [tierGold, tierSilver, tierBronze, tierUnknown],
+                    data: [tierGold, tierSilver, tierBronze],
                     backgroundColor: [
                         'rgba(212, 175, 55, 0.75)',  // Gold
                         'rgba(192, 192, 192, 0.75)', // Silver
-                        'rgba(205, 127, 50, 0.75)',  // Bronze
-                        'rgba(112, 110, 107, 0.75)'  // Unknown
+                        'rgba(205, 127, 50, 0.75)'   // Bronze
                     ],
                     borderColor: [
                         'rgba(212, 175, 55, 1)',
                         'rgba(192, 192, 192, 1)',
-                        'rgba(205, 127, 50, 1)',
-                        'rgba(112, 110, 107, 1)'
+                        'rgba(205, 127, 50, 1)'
                     ],
                     borderWidth: 1
                 }]
@@ -1349,7 +1371,7 @@ function createCharts() {
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Portfolio Value ($)',
+                    label: 'Portfolio Value (Kč)',
                     data: dataValues,
                     backgroundColor: [
                         'rgba(1, 116, 211, 0.6)',
@@ -1404,7 +1426,7 @@ function createCharts() {
             data: {
                 labels: cohortLabels,
                 datasets: [{
-                    label: 'Avg Predicted CLV ($)',
+                    label: 'Avg Predicted CLV (Kč)',
                     data: cohortValues,
                     backgroundColor: 'rgba(92, 103, 242, 0.7)',
                     borderColor: 'rgba(92, 103, 242, 1)',
@@ -1561,8 +1583,13 @@ function populateMigrations() {
     if (migrations.length === 0) {
         container.innerHTML = `
             <div class="no-migrations">
-                <div class="no-migrations-icon">🎉</div>
-                <h3>All loyalty tiers are aligned!</h3>
+                <div class="no-migrations-icon" style="color: var(--sf-success); display: block; margin-bottom: 12px;">
+                    <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto;">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                </div>
+                <h3>All loyalty tiers are aligned</h3>
                 <p>No account migrations or value gaps detected at this time.</p>
             </div>
         `;
@@ -1584,7 +1611,7 @@ function populateMigrations() {
                     <div class="migration-customer-id">${migration.accountId} • ${migration.region}</div>
                 </div>
                 <div class="migration-badge ${migration.type}">
-                    ${migration.type === 'upsell' ? '📈 UPSELL' : '⚠️ RISK'}
+                    ${migration.type === 'upsell' ? 'UPSELL' : 'RISK'}
                 </div>
             </div>
 
@@ -1614,8 +1641,8 @@ function populateMigrations() {
 
             <div class="migration-action" onclick="alert('Offer initiated for ${migration.name}')">
                 ${migration.type === 'upsell' 
-                    ? '✨ Recommend tier upgrade offer' 
-                    : '🔔 Check in with customer'}
+                    ? 'Recommend tier upgrade offer' 
+                    : 'Check in with customer'}
             </div>
         `;
 
@@ -1783,11 +1810,8 @@ if (selectAllCheckbox) {
 const bulkCampaignBtn = document.getElementById('bulkCampaignBtn');
 if (bulkCampaignBtn) {
     bulkCampaignBtn.addEventListener('click', () => {
-        const count = pendingCampaigns.size;
-        alert(`Salesforce Campaign: Added ${count} customers to the CRM Active Retention Campaign!`);
-        pendingCampaigns.clear();
-        updateBulkActionBar();
-        applyFilters();
+        if (pendingCampaigns.size === 0) return;
+        openCampaignBuilder();
     });
 }
 
@@ -1948,7 +1972,7 @@ function updateBulkActionBar() {
 
     const count = pendingCampaigns.size;
     if (count > 0) {
-        text.innerHTML = `🛡️ <strong>${count}</strong> profile${count > 1 ? 's' : ''} selected:`;
+        text.innerHTML = `<strong>${count}</strong> profile${count > 1 ? 's' : ''} selected:`;
         bar.style.display = 'flex';
     } else {
         bar.style.display = 'none';
@@ -2159,5 +2183,397 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeThresholdSliders();
     initializeDashboardSubTabs();
     initializeActionCenterClicks();
+    initCampaignBuilder();
     loadAccounts();
+});
+
+
+// =============================================================================
+// NEW FEATURE FUNCTIONS
+// =============================================================================
+
+// --- 1. Segment Explorer ---
+
+async function loadSegments() {
+    try {
+        const response = await fetch('/api/segments');
+        const result = await response.json();
+        if (!result.success) return;
+
+        const segments = result.segments;
+        const grid = document.getElementById('segmentsGrid');
+        if (!grid) return;
+
+        const defs = [
+            {
+                key: 'champions', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#c8992a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.45 1-1 1H4v2h16v-2h-5c-.55 0-1-.45-1-1v-2.34"></path><path d="M12 2a6 6 0 0 1 6 6v5a6 6 0 0 1-6 6 6 6 0 0 1-6-6V8a6 6 0 0 1 6-6z"></path></svg>`, name: 'Champions',
+                desc: 'Gold-tier, low churn, high frequency, recently active',
+                color: '#c8992a', bg: '#fffbeb',
+            },
+            {
+                key: 'high_value_at_risk', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#ba0517" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`, name: 'High-Value At-Risk',
+                desc: 'High/Silver CLV customers with elevated churn risk',
+                color: '#ba0517', bg: '#fff0f0',
+            },
+            {
+                key: 'loyal_mid_tier', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#0176d3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>`, name: 'Loyal Mid-Tier',
+                desc: 'Consistent Silver/Bronze customers, low churn risk',
+                color: '#0176d3', bg: '#eef4fd',
+            },
+            {
+                key: 'dormant_high_potential', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#9e540a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`, name: 'Dormant High-Potential',
+                desc: 'High historical spend, inactive 6+ months — re-engage priority',
+                color: '#9e540a', bg: '#fef6ee',
+            },
+            {
+                key: 'growing_new', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#1b7b4b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>`, name: 'Growing New',
+                desc: 'Strong positive spend trend — future high-value accounts',
+                color: '#1b7b4b', bg: '#f0fdf5',
+            },
+        ];
+
+        grid.innerHTML = '';
+        defs.forEach(def => {
+            const seg = segments[def.key] || { count: 0, avg_clv: 0, total_clv: 0, members: [] };
+            const memberIds = JSON.stringify((seg.members || []).map(m => m.account_external_id));
+
+            const card = document.createElement('div');
+            card.className = 'segment-card';
+            card.style.cssText = `background: #ffffff; border: 1px solid var(--sf-border);`;
+            card.innerHTML = `
+                <div class="segment-card-header">
+                    <span class="segment-icon">${def.icon}</span>
+                    <div>
+                        <div class="segment-name">${def.name}</div>
+                        <div class="segment-desc">${def.desc}</div>
+                    </div>
+                </div>
+                <div class="segment-stats">
+                    <div class="segment-stat">
+                        <div class="segment-stat-value" style="color:${def.color}">${seg.count}</div>
+                        <div class="segment-stat-label">Accounts</div>
+                    </div>
+                    <div class="segment-stat">
+                        <div class="segment-stat-value">${formatCurrency(seg.avg_clv)}</div>
+                        <div class="segment-stat-label">Avg CLV</div>
+                    </div>
+                    <div class="segment-stat">
+                        <div class="segment-stat-value">${formatCurrency(seg.total_clv)}</div>
+                        <div class="segment-stat-label">Portfolio Value</div>
+                    </div>
+                </div>
+                <button class="segment-filter-btn" style="border-color:${def.color}; color:${def.color};" 
+                    data-ids='${memberIds}' data-name="${def.name}">
+                    View ${seg.count} Account${seg.count !== 1 ? 's' : ''} →
+                </button>
+            `;
+            card.querySelector('.segment-filter-btn').addEventListener('click', (e) => {
+                const ids = JSON.parse(e.currentTarget.getAttribute('data-ids'));
+                const name = e.currentTarget.getAttribute('data-name');
+                filterBySegment(ids, name);
+            });
+            grid.appendChild(card);
+        });
+
+        const panel = document.getElementById('segmentsPanel');
+        panel.style.display = 'block';
+        // Smoothly scroll to the segment panel so it's visible
+        setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 150);
+    } catch(e) {
+        console.error('loadSegments error:', e);
+    }
+}
+
+function filterBySegment(ids, name) {
+    segmentFilterIds = ids;
+    segmentFilterName = name;
+
+    const banner = document.getElementById('segmentFilterBanner');
+    const label  = document.getElementById('segmentFilterLabel');
+    if (banner) banner.style.display = 'flex';
+    if (label)  label.textContent = `Segment: "${name}" (${ids.length} accounts)`;
+
+    // Clear other filters
+    document.getElementById('listSearchInput').value = '';
+    document.getElementById('regionFilter').value = 'all';
+    document.getElementById('tierFilter').value = 'all';
+    document.getElementById('matchFilter').value = 'all';
+    document.getElementById('churnFilter').value = 'all';
+    document.getElementById('priorityFilter').value = 'all';
+
+    switchTab('accounts');
+    applyFilters();
+}
+
+
+// --- 2. Per-Customer XAI Explanation ---
+
+async function renderXAIExplanation(accountId) {
+    const container = document.getElementById('xaiExplanationBlock');
+    if (!container) return;
+    container.innerHTML = '<div style="padding: 8px; font-size: 11px; color: #888;">Loading prediction drivers…</div>';
+
+    try {
+        const response = await fetch(`/api/explain/${encodeURIComponent(accountId)}`);
+        const result = await response.json();
+        if (!result.success || !result.explanations || result.explanations.length === 0) {
+            container.innerHTML = '';
+            return;
+        }
+
+        const exps = result.explanations;
+        const maxScore = Math.max(...exps.map(e => e.score)) || 1;
+
+        container.innerHTML = `
+            <div class="record-section xai-section">
+                <div class="record-section-title">
+                    <span>🔍 Why This CLV? &mdash; Top Prediction Drivers</span>
+                </div>
+                <div class="xai-body">
+                    ${exps.map(exp => {
+                        const barWidth = Math.round((exp.score / maxScore) * 100);
+                        return `
+                        <div class="xai-feature-row">
+                            <div class="xai-feature-info">
+                                <div class="xai-feature-label">${exp.label}</div>
+                                <div class="xai-feature-vals">
+                                    This account: <strong>${exp.customer_value}</strong>
+                                    &nbsp;&middot;&nbsp; Median: ${exp.median_value}
+                                </div>
+                            </div>
+                            <div class="xai-bar-container">
+                                <div class="xai-bar ${exp.direction}" style="width:${barWidth}%"></div>
+                            </div>
+                            <div class="xai-direction-badge ${exp.direction}">
+                                ${exp.direction === 'positive' ? '↑ Boosting CLV' : '↓ Reducing CLV'}
+                            </div>
+                        </div>`;
+                    }).join('')}
+                </div>
+            </div>`;
+    } catch(e) {
+        container.innerHTML = '';
+        console.error('XAI error:', e);
+    }
+}
+
+
+// --- 3. Workflow Trigger Log ---
+
+async function triggerWorkflow(accountId, accountName, actionType, notes) {
+    try {
+        const response = await fetch('/api/workflow', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ account_id: accountId, account_name: accountName, action_type: actionType, notes }),
+        });
+        const result = await response.json();
+        if (result.success) {
+            prependWorkflowEntry(result.entry);
+            showStatus(`Action logged: ${actionType} — ${accountName}`, 'success');
+        }
+    } catch(e) {
+        console.error('triggerWorkflow error:', e);
+    }
+}
+
+function prependWorkflowEntry(entry) {
+    const body = document.getElementById('workflowLogBody');
+    if (!body) return;
+    // Remove empty state
+    const empty = body.querySelector('.workflow-empty-state');
+    if (empty) empty.remove();
+
+    const actionIcons = {
+        'Urgent Retention Task': '<span class="kpi-status-dot kpi-status-dot--error"></span>',
+        'Targeted Campaign': '<span class="kpi-status-dot kpi-status-dot--warning"></span>',
+        'Tier Upgrade Offer': '<span class="kpi-status-dot kpi-status-dot--info"></span>',
+        'Account Review Task': '<span class="kpi-status-dot kpi-status-dot--info"></span>',
+        'Client Check-in': '<span class="kpi-status-dot kpi-status-dot--success"></span>',
+        'Campaign Enrolled': '<span class="kpi-status-dot kpi-status-dot--info"></span>',
+        'Campaign Suppressed': '<span class="kpi-status-dot kpi-status-dot--error"></span>',
+        'High-Touch Call': '<span class="kpi-status-dot kpi-status-dot--info"></span>',
+    };
+    const icon = actionIcons[entry.action_type] || '<span class="kpi-status-dot kpi-status-dot--info"></span>';
+
+    const div = document.createElement('div');
+    div.className = 'workflow-entry';
+    div.innerHTML = `
+        <div class="workflow-entry-icon">${icon}</div>
+        <div class="workflow-entry-body">
+            <div class="workflow-entry-title">${entry.action_type}</div>
+            <div class="workflow-entry-meta">${entry.account_name} (${entry.account_id})</div>
+            ${entry.notes ? `<div class="workflow-entry-notes">${entry.notes}</div>` : ''}
+        </div>
+        <div class="workflow-entry-time">${entry.timestamp.split(' ')[1] || entry.timestamp}</div>
+    `;
+    body.insertBefore(div, body.firstChild);
+}
+
+
+// --- 4. Campaign Builder Modal ---
+
+function openCampaignBuilder() {
+    const modal = document.getElementById('campaignBuilderModal');
+    const infoBox = document.getElementById('campaignAudienceInfo');
+    if (!modal || !infoBox) return;
+
+    const selectedIds = Array.from(pendingCampaigns);
+    const accounts = accountsData.filter(a => selectedIds.includes(a.account_external_id));
+
+    const rows = accounts.slice(0, 8).map(a => `
+        <div class="campaign-audience-row">
+            <span class="campaign-audience-name">${a.Name || a.account_external_id}</span>
+            <span class="campaign-audience-tier slds-badge-pill ${(a.suggested_tier || 'unknown').toLowerCase()}">${a.suggested_tier || 'N/A'}</span>
+            <span class="campaign-audience-clv">${a.clv_2025_predicted !== undefined ? formatCurrency(a.clv_2025_predicted) : 'N/A'}</span>
+        </div>
+    `).join('');
+
+    infoBox.innerHTML = `
+        <div class="campaign-audience-header">
+            <strong>${selectedIds.length} account${selectedIds.length !== 1 ? 's' : ''} selected</strong>
+            ${accounts.length > 8 ? `<span class="campaign-more">&hellip;and ${accounts.length - 8} more</span>` : ''}
+        </div>
+        <div class="campaign-audience-list">${rows}</div>
+    `;
+
+    modal.style.display = 'flex';
+}
+
+function initCampaignBuilder() {
+    const modal     = document.getElementById('campaignBuilderModal');
+    const closeBtn  = document.getElementById('closeCampaignModal');
+    const cancelBtn = document.getElementById('cancelCampaignBtn');
+    const launchBtn = document.getElementById('launchCampaignBtn');
+
+    if (!modal) return;
+
+    const closeModal = () => { modal.style.display = 'none'; };
+    if (closeBtn)  closeBtn.addEventListener('click', closeModal);
+    if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+    if (launchBtn) {
+        launchBtn.addEventListener('click', async () => {
+            const selectedType = document.querySelector('input[name="campaignType"]:checked')?.value || 'email';
+            const typeLabels = {
+                high_touch: 'High-Touch Call',
+                email:      'Campaign Enrolled',
+                exclude:    'Campaign Suppressed',
+            };
+            const actionType = typeLabels[selectedType] || 'Campaign Enrolled';
+
+            const selectedIds = Array.from(pendingCampaigns);
+            const accounts = accountsData.filter(a => selectedIds.includes(a.account_external_id));
+
+            // Log one workflow entry per account
+            for (const a of accounts) {
+                await triggerWorkflow(
+                    a.account_external_id,
+                    a.Name || a.account_external_id,
+                    actionType,
+                    `Bulk campaign launched: ${selectedType.replace('_', '-')} for ${accounts.length} accounts`
+                );
+            }
+
+            pendingCampaigns.clear();
+            updateBulkActionBar();
+            applyFilters();
+            closeModal();
+            showStatus(`✅ ${accounts.length} accounts enrolled in ${actionType}`, 'success');
+        });
+    }
+}
+
+
+// --- 5. Model Health & Retrain ---
+
+async function loadModelStatus() {
+    try {
+        const response = await fetch('/api/model/status');
+        const result = await response.json();
+        if (!result.success) return;
+
+        const statusEl   = document.getElementById('mhStatus');
+        const trainedEl  = document.getElementById('mhTrainedAt');
+        const driftGrid  = document.getElementById('mhDriftGrid');
+
+        if (statusEl) {
+            statusEl.textContent  = result.model_loaded ? 'Loaded & Ready' : 'Not Loaded';
+            statusEl.style.color  = result.model_loaded ? 'var(--sf-success)' : 'var(--sf-warning)';
+        }
+        if (trainedEl && result.trained_at) {
+            const d = new Date(result.trained_at);
+            trainedEl.textContent = d.toLocaleString();
+        }
+        if (driftGrid && result.drift_indicators && result.drift_indicators.length > 0) {
+            driftGrid.innerHTML = result.drift_indicators.map(d => `
+                <div class="drift-item">
+                    <div class="drift-metric">${d.metric}</div>
+                    <div class="drift-value">${d.value}</div>
+                </div>
+            `).join('');
+        }
+    } catch(e) {
+        console.error('loadModelStatus error:', e);
+    }
+}
+
+async function retrainModel() {
+    const btn      = document.getElementById('retrainModelBtn');
+    const statusEl = document.getElementById('retrainStatus');
+    if (!btn) return;
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner" style="display: inline-block; vertical-align: middle; margin-right: 4px; width: 12px; height: 12px;"></span> Retraining...';
+    if (statusEl) { statusEl.textContent = 'Retraining model on latest data...'; statusEl.className = 'status-message'; }
+
+    try {
+        const response = await fetch('/api/retrain', { method: 'POST' });
+        const result = await response.json();
+        btn.disabled = false;
+        btn.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg> Retrain Model Now';
+
+        if (result.success) {
+            if (statusEl) {
+                statusEl.textContent = `Retraining complete! Test MAE: ${formatCurrency(result.mae)}`;
+                statusEl.className = 'status-message success';
+            }
+            loadModelStatus();
+        } else {
+            if (statusEl) {
+                statusEl.textContent = 'Retraining failed: ' + result.error;
+                statusEl.className = 'status-message error';
+            }
+        }
+    } catch(e) {
+        btn.disabled = false;
+        btn.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg> Retrain Model Now';
+        if (statusEl) { statusEl.textContent = 'Network error during retraining'; statusEl.className = 'status-message error'; }
+    }
+}
+
+// Bind retrain button + segment filter clear
+document.addEventListener('DOMContentLoaded', () => {
+    const retrainBtn = document.getElementById('retrainModelBtn');
+    if (retrainBtn) retrainBtn.addEventListener('click', retrainModel);
+
+    const clearWfBtn = document.getElementById('clearWorkflowLogBtn');
+    if (clearWfBtn) {
+        clearWfBtn.addEventListener('click', () => {
+            const body = document.getElementById('workflowLogBody');
+            if (body) body.innerHTML = '<div class="workflow-empty-state">Log cleared.</div>';
+        });
+    }
+
+    const clearSegBtn = document.getElementById('clearSegmentFilterBtn');
+    if (clearSegBtn) {
+        clearSegBtn.addEventListener('click', () => {
+            segmentFilterIds = null;
+            segmentFilterName = '';
+            const banner = document.getElementById('segmentFilterBanner');
+            if (banner) banner.style.display = 'none';
+            applyFilters();
+        });
+    }
 });

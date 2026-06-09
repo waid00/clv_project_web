@@ -38,6 +38,9 @@ data_cache = {
     "churn": None,
     "predictions": None,
     "model": None,
+    "feature_names": None,
+    "workflow_log": [],
+    "model_trained_at": None,
 }
 
 
@@ -116,6 +119,11 @@ def train_or_load_model():
             with open(feature_names_path, "rb") as f:
                 feature_names = pickle.load(f)
             print("✅ Loaded pre-trained model from disk")
+            # Record training timestamp from file modification time
+            import os as _os
+            from datetime import datetime as _dt
+            mtime = _os.path.getmtime(model_path)
+            data_cache["model_trained_at"] = _dt.fromtimestamp(mtime).isoformat()
             return model, feature_names
 
         else:
@@ -157,6 +165,8 @@ def train_or_load_model():
                 eval_metric="mae",
             )
             model.fit(X_train, y_train)
+            from datetime import datetime as _dt2
+            data_cache["model_trained_at"] = _dt2.now().isoformat()
 
             # Save model and feature names
             with open(model_path, "wb") as f:
@@ -617,6 +627,287 @@ def simulate():
         print(f"❌ Error in simulate: {e}")
         import traceback
         traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+# =============================================================================
+# NEW ENDPOINTS: Segments, XAI, Retrain, Workflow, Model Status
+# =============================================================================
+
+@app.route("/api/segments", methods=["GET"])
+def get_segments():
+    """Compute named RFM+CLV customer segments from predictions + features."""
+    try:
+        if data_cache["predictions"] is None:
+            return jsonify({"success": False, "error": "No predictions available. Run the model first."}), 400
+
+        predictions_df = data_cache["predictions"]
+        features_df = pd.read_csv(NOTEBOOK_OUTPUTS_DIR / "step_02_features.csv")
+
+        # Columns we need from features
+        feat_cols = ["account_external_id", "frequency", "recency_days",
+                     "monetary_total", "spend_trend_1y", "app_usage_score", "email_open_rate"]
+        feat_cols = [c for c in feat_cols if c in features_df.columns]
+        df = predictions_df.merge(features_df[feat_cols], on="account_external_id", how="left")
+
+        # Merge churn risk
+        if data_cache["churn"] is not None:
+            churn = data_cache["churn"]
+            churn_cols = ["account_external_id", "churn_risk", "churn_probability"]
+            churn_cols = [c for c in churn_cols if c in churn.columns]
+            df = df.merge(churn[churn_cols], on="account_external_id", how="left")
+        else:
+            df["churn_risk"] = "Unknown"
+            df["churn_probability"] = 0.0
+
+        median_frequency = float(features_df["frequency"].median()) if "frequency" in features_df.columns else 3.0
+        median_monetary  = float(features_df["monetary_total"].median()) if "monetary_total" in features_df.columns else 0.0
+
+        buckets = {k: [] for k in ["champions", "high_value_at_risk", "loyal_mid_tier",
+                                    "dormant_high_potential", "growing_new"]}
+
+        for _, row in df.iterrows():
+            account_id   = row.get("account_external_id", "")
+            tier         = row.get("suggested_tier", "Unknown") or "Unknown"
+            churn_risk   = row.get("churn_risk", "Unknown") or "Unknown"
+            frequency    = float(row.get("frequency", 0) or 0)
+            recency      = float(row.get("recency_days", 999) or 999)
+            monetary     = float(row.get("monetary_total", 0) or 0)
+            trend_1y     = float(row.get("spend_trend_1y", 0) or 0)
+            pred_clv     = float(row.get("clv_2025_predicted", 0) or 0)
+
+            record = {
+                "account_external_id": str(account_id),
+                "predicted_clv": round(pred_clv, 2),
+                "churn_risk": churn_risk,
+            }
+
+            # Priority: first matching bucket wins
+            if tier == "Gold" and churn_risk == "Low" and frequency > median_frequency and recency < 90:
+                buckets["champions"].append(record)
+            elif tier in ["Gold", "Silver"] and churn_risk in ["High", "Medium"]:
+                buckets["high_value_at_risk"].append(record)
+            elif tier in ["Silver", "Bronze"] and churn_risk == "Low" and frequency > 3:
+                buckets["loyal_mid_tier"].append(record)
+            elif monetary > median_monetary and recency > 180:
+                buckets["dormant_high_potential"].append(record)
+            elif trend_1y > 20 and pred_clv > 0:
+                buckets["growing_new"].append(record)
+            # Unclassified accounts fall through
+
+        def summarise(members):
+            if not members:
+                return {"count": 0, "avg_clv": 0, "total_clv": 0, "members": []}
+            clvs = [m["predicted_clv"] for m in members]
+            return {
+                "count": len(members),
+                "avg_clv": round(float(np.mean(clvs)), 2),
+                "total_clv": round(float(np.sum(clvs)), 2),
+                "members": members[:100],
+            }
+
+        result = {key: summarise(members) for key, members in buckets.items()}
+        return jsonify({"success": True, "segments": result})
+
+    except Exception as e:
+        print(f"❌ Error in get_segments: {e}")
+        import traceback; traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/explain/<account_id>", methods=["GET"])
+def explain_account(account_id):
+    """Return top-3 feature-level CLV drivers for a specific account (approximated XAI)."""
+    try:
+        if data_cache["model"] is None:
+            return jsonify({"success": False, "error": "Model not loaded"}), 400
+
+        model        = data_cache["model"]
+        feature_names = data_cache.get("feature_names") or []
+        if not feature_names or not hasattr(model, "feature_importances_"):
+            return jsonify({"success": False, "error": "Feature importances unavailable"}), 400
+
+        df = pd.read_csv(NOTEBOOK_OUTPUTS_DIR / "step_02_features.csv")
+        customer_row = df[df["account_external_id"] == account_id]
+        if customer_row.empty:
+            return jsonify({"success": False, "error": f"Account {account_id} not found"}), 404
+
+        X_all  = df[feature_names].copy()
+        X_cust = customer_row[feature_names].copy()
+        for col in feature_names:
+            med = X_all[col].median()
+            if pd.isna(X_cust[col].iloc[0]):
+                X_cust[col] = med
+
+        medians     = X_all.median()
+        stds        = X_all.std().replace(0, 1)
+        importances = model.feature_importances_
+
+        # Features where higher value generally means higher CLV
+        positive_features = {
+            "spend_2024", "spend_2023", "spend_2022", "monetary_total",
+            "frequency", "app_usage_score", "email_open_rate",
+            "spend_trend_1y", "spend_trend_2y", "tenure_days", "login_count_90d"
+        }
+        LABELS = {
+            "spend_2024": "2024 Annual Spend",
+            "spend_2023": "2023 Annual Spend",
+            "spend_2022": "2022 Annual Spend",
+            "monetary_total": "Total Historical Spend",
+            "frequency": "Purchase Frequency",
+            "app_usage_score": "Mobile App Engagement",
+            "email_open_rate": "Email Open Rate",
+            "spend_trend_1y": "1-Year Spend Trend",
+            "spend_trend_2y": "2-Year Spend Trend",
+            "tenure_days": "Account Tenure",
+            "recency_days": "Purchase Recency",
+            "login_count_90d": "Recent Login Activity",
+            "avg_discount_pct": "Avg Discount Used",
+        }
+
+        contributions = []
+        for i, feat in enumerate(feature_names):
+            cust_val = float(X_cust[feat].iloc[0])
+            med_val  = float(medians[feat])
+            std_val  = float(stds[feat])
+            imp      = float(importances[i])
+            z_score  = (cust_val - med_val) / std_val
+
+            is_pos = feat in positive_features
+            direction = "positive" if (is_pos and z_score > 0) or (not is_pos and z_score < 0) else "negative"
+            score  = imp * abs(z_score)
+
+            label = LABELS.get(feat, feat.replace("_", " ").title())
+
+            if any(k in feat for k in ["spend", "monetary"]):
+                dv, dm = f"${cust_val:,.0f}", f"${med_val:,.0f}"
+            elif "rate" in feat:
+                dv, dm = f"{cust_val*100:.0f}%", f"{med_val*100:.0f}%"
+            elif "days" in feat:
+                dv, dm = f"{cust_val:.0f} days", f"{med_val:.0f} days"
+            elif "score" in feat:
+                dv, dm = f"{cust_val:.0f}/100", f"{med_val:.0f}/100"
+            elif "trend" in feat:
+                dv, dm = f"{cust_val:+.0f}%", f"{med_val:+.0f}%"
+            else:
+                dv, dm = f"{cust_val:.1f}", f"{med_val:.1f}"
+
+            contributions.append({
+                "feature": feat, "label": label, "score": score,
+                "direction": direction,
+                "customer_value": dv, "median_value": dm,
+                "z_score": round(z_score, 2),
+            })
+
+        contributions.sort(key=lambda x: x["score"], reverse=True)
+        return jsonify({"success": True, "account_id": account_id, "explanations": contributions[:3]})
+
+    except Exception as e:
+        print(f"❌ Error in explain_account: {e}")
+        import traceback; traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/retrain", methods=["POST"])
+def retrain_model():
+    """Force model retraining: delete cached pkl and retrain from scratch."""
+    try:
+        model_path = MODELS_DIR / "xgboost_clv_model.pkl"
+        feature_names_path = MODELS_DIR / "feature_names.pkl"
+        if model_path.exists():        model_path.unlink()
+        if feature_names_path.exists(): feature_names_path.unlink()
+
+        data_cache["model"] = None
+        data_cache["feature_names"] = None
+
+        model, feature_names = train_or_load_model()
+        data_cache["model"]        = model
+        data_cache["feature_names"] = feature_names
+
+        if model is None:
+            return jsonify({"success": False, "error": "Model training failed"}), 500
+
+        # Compute test-set MAE to return to UI
+        df_train = pd.read_csv(NOTEBOOK_OUTPUTS_DIR / "step_02_features.csv")
+        DROP_COLS  = ["account_external_id", "loyalty_tier_label", "clv_2025"]
+        FEAT_COLS  = [c for c in df_train.columns if c not in DROP_COLS]
+        X_tmp = df_train[FEAT_COLS].copy()
+        y_tmp = df_train["clv_2025"].copy()
+        for col in ["spend_trend_2y", "spend_trend_1y"]:
+            if col in X_tmp.columns:
+                X_tmp[col] = X_tmp[col].clip(upper=X_tmp[col].quantile(0.99))
+        _, X_test, _, y_test = train_test_split(X_tmp, y_tmp, test_size=0.2, random_state=42)
+        mae = float(np.mean(np.abs(np.maximum(model.predict(X_test), 0) - y_test.values)))
+
+        return jsonify({
+            "success": True,
+            "message": "Model retrained successfully",
+            "trained_at": data_cache["model_trained_at"],
+            "mae": mae,
+        })
+
+    except Exception as e:
+        print(f"❌ Error in retrain_model: {e}")
+        import traceback; traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/workflow", methods=["POST"])
+def log_workflow_action():
+    """Log a triggered workflow action (task creation, campaign enrolment, etc.)."""
+    try:
+        from datetime import datetime as _dtw
+        payload      = request.json or {}
+        entry = {
+            "timestamp":    _dtw.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "account_id":   payload.get("account_id", "—"),
+            "account_name": payload.get("account_name", "—"),
+            "action_type":  payload.get("action_type", "—"),
+            "notes":        payload.get("notes", ""),
+        }
+        data_cache["workflow_log"].insert(0, entry)
+        data_cache["workflow_log"] = data_cache["workflow_log"][:200]  # cap
+        return jsonify({"success": True, "entry": entry})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/workflow/log", methods=["GET"])
+def get_workflow_log():
+    """Return the in-memory workflow action log."""
+    return jsonify({"success": True, "log": data_cache["workflow_log"]})
+
+
+@app.route("/api/model/status", methods=["GET"])
+def get_model_status():
+    """Return model training status and current data snapshot (drift indicator)."""
+    try:
+        from datetime import datetime as _dts
+        import os as _osm
+        model_path  = MODELS_DIR / "xgboost_clv_model.pkl"
+        trained_at  = data_cache.get("model_trained_at")
+        if not trained_at and model_path.exists():
+            trained_at = _dts.fromtimestamp(_osm.path.getmtime(model_path)).isoformat()
+
+        drift = []
+        if data_cache["features"] is not None:
+            f = data_cache["features"]
+            for col, label, fmt in [
+                ("spend_2024",   "Avg 2024 Spend",   lambda v: f"${v:,.0f}"),
+                ("recency_days", "Avg Recency",       lambda v: f"{v:.0f} days"),
+                ("frequency",    "Avg Freq (orders)", lambda v: f"{v:.1f}"),
+                ("app_usage_score", "Avg App Score",  lambda v: f"{v:.0f}/100"),
+            ]:
+                if col in f.columns:
+                    drift.append({"metric": label, "value": fmt(float(f[col].mean()))})
+
+        return jsonify({
+            "success": True,
+            "model_loaded": data_cache["model"] is not None,
+            "trained_at":   trained_at,
+            "drift_indicators": drift,
+        })
+    except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
 

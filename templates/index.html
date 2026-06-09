@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CLV Prediction Manager | Salesforce Lightning</title>
+    <meta name="description" content="Customer Lifetime Value Prediction Dashboard powered by XGBoost — loyalty tier management, churn risk analysis, and CRM integration.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 </head>
@@ -17,7 +21,11 @@
                 <div></div><div></div><div></div>
             </div>
             <div class="slds-logo-container">
-                <span class="slds-logo-cloud">☁️</span>
+                <span class="slds-logo-cloud">
+                    <svg class="slds-logo-cloud-svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor" style="vertical-align: middle;">
+                        <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+                    </svg>
+                </span>
                 <span class="slds-logo-text">salesforce</span>
             </div>
         </div>
@@ -25,16 +33,37 @@
         <!-- Salesforce Global Search Bar -->
         <div class="slds-global-header__search">
             <div class="slds-search-input-wrapper">
-                <span class="search-icon">🔍</span>
+                <span class="search-icon">
+                    <svg class="search-icon-svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </span>
                 <input type="text" id="globalSearchInput" placeholder="Search accounts by name or ID..." aria-label="Search accounts">
             </div>
         </div>
 
         <div class="slds-global-header__right">
             <!-- Global Utilities -->
-            <button class="slds-header-icon-btn" title="Help">❓</button>
-            <button class="slds-header-icon-btn" title="Setup">⚙️</button>
-            <button class="slds-header-icon-btn" title="Notifications">🔔</button>
+            <button class="slds-header-icon-btn" title="Help">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+            </button>
+            <button class="slds-header-icon-btn" title="Setup">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+            </button>
+            <button class="slds-header-icon-btn" title="Notifications">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+            </button>
             
             <div class="slds-user-profile">
                 <div class="slds-avatar">DA</div>
@@ -63,7 +92,12 @@
     <!-- Salesforce Page Header with action buttons -->
     <div class="slds-page-header">
         <div class="slds-page-header__left">
-            <div class="slds-page-header__icon">💼</div>
+            <div class="slds-page-header__icon">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                </svg>
+            </div>
             <div class="slds-page-header__title-wrapper">
                 <span class="slds-page-header__breadcrumb">Analytics &bull; Customer Lifetime Value</span>
                 <h1 class="slds-page-header__title" id="pageHeaderTitle">CLV Prediction Dashboard</h1>
@@ -78,11 +112,17 @@
                 <div id="statusMessage" class="status-message"></div>
             </div>
             <button id="predictBtn" class="btn btn-primary">
-                <span class="btn-icon">⚡</span>
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="margin-right: 4px;">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                </svg>
                 Run XGBoost Model
             </button>
             <button id="exportBtn" class="btn btn-secondary" disabled>
-                <span class="btn-icon">💾</span>
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                    <polyline points="7 3 7 8 15 8"></polyline>
+                </svg>
                 Export Predictions
             </button>
         </div>
@@ -98,26 +138,32 @@
             <!-- Action Center (Critical Summary) -->
             <div id="actionCenterPanel" class="action-center-panel" style="display: none;">
                 <div class="action-center-header">
-                    <span class="action-center-icon">📢</span>
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--sf-error); margin-right: 4px; vertical-align: middle;">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
                     <h2>Action Center & Attention Summary</h2>
                 </div>
                 <div class="action-center-body">
                     <div class="action-center-kpi" id="actionRetentionTarget">
-                        <span class="kpi-icon">🔴</span>
+                        <span class="kpi-status-dot kpi-status-dot--error" style="margin-right: 8px;"></span>
                         <div>
                             <strong id="actionRetentionCount">0</strong>
                             <span class="kpi-desc">Accounts need immediate retention outreach (High Churn Risk)</span>
                         </div>
                     </div>
                     <div class="action-center-kpi" id="actionCampaignTarget">
-                        <span class="kpi-icon">🟡</span>
+                        <span class="kpi-status-dot kpi-status-dot--warning" style="margin-right: 8px;"></span>
                         <div>
                             <strong id="actionCampaignCount">0</strong>
                             <span class="kpi-desc">Accounts recommended for loyalty campaigns (Medium Churn Risk)</span>
                         </div>
                     </div>
                     <div class="action-center-kpi" id="actionSyncTarget">
-                        <span class="kpi-icon">☁️</span>
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="color: var(--sf-blue); margin-right: 8px; flex-shrink: 0;">
+                            <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+                        </svg>
                         <div>
                             <strong id="actionSyncCount">0</strong>
                             <span class="kpi-desc">Loyalty tier mismatches pending Salesforce CRM sync</span>
@@ -126,10 +172,11 @@
                 </div>
             </div>
 
-            <!-- Dashboard Sub-Tabs -->
-            <div id="dashboardSubTabs" class="dashboard-sub-tabs" style="display: none;">
-                <button class="sub-tab-btn active" data-subtab="operational">📋 Operational Overview (Analyst)</button>
-                <button class="sub-tab-btn" data-subtab="strategic">📊 Strategic Overview (CFO & Executive)</button>
+
+        <!-- Dashboard Sub-Tabs -->
+        <div id="dashboardSubTabs" class="dashboard-sub-tabs" style="display: none;">
+                <button class="sub-tab-btn active" data-subtab="operational">Operational Overview (Analyst)</button>
+                <button class="sub-tab-btn" data-subtab="strategic">Strategic Overview (CFO & Executive)</button>
             </div>
 
             <!-- Operational Analyst View Container -->
@@ -169,10 +216,15 @@
                 </div>
 
                 <!-- Executive Calibration Panel -->
-                <div id="calibrationPanel" class="lightning-card threshold-card" style="display: none; margin-bottom: 20px; border-left: 4px solid var(--slds-color-brand);">
+                <div id="calibrationPanel" class="lightning-card threshold-card" style="display: none; margin-bottom: 20px;">
                     <div class="lightning-card__header">
                         <div class="lightning-card__header-title">
-                            <span class="lightning-card__header-icon">⚙️</span>
+                            <span class="lightning-card__header-icon">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                                </svg>
+                            </span>
                             <h2>Loyalty Tier Calibration (Dynamic Simulation)</h2>
                         </div>
                     </div>
@@ -196,12 +248,36 @@
                     </div>
                 </div>
 
+                <!-- Customer Segment Explorer (shown after model run) -->
+                <div id="segmentsPanel" class="segments-panel" style="display: none; margin-top: 20px;">
+                    <div class="segments-header">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--sf-blue); margin-right: 8px; flex-shrink: 0; vertical-align: middle;">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <circle cx="12" cy="12" r="6"></circle>
+                            <circle cx="12" cy="12" r="2"></circle>
+                        </svg>
+                        <div>
+                            <h2>Customer Segment Explorer</h2>
+                            <p>Intelligent RFM + CLV grouping — click any segment to filter the Accounts list</p>
+                        </div>
+                    </div>
+                    <div class="segments-grid" id="segmentsGrid">
+                        <!-- Populated by loadSegments() -->
+                    </div>
+                </div>
+
                 <!-- Dashboard Visual Layout (Charts side by side) -->
                 <div class="dashboard-charts-layout">
                     <div class="lightning-card">
                         <div class="lightning-card__header">
                             <div class="lightning-card__header-title">
-                                <span class="lightning-card__header-icon">⚠️</span>
+                                <span class="lightning-card__header-icon">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--sf-warning);">
+                                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                    </svg>
+                                </span>
                                 <h2>Customer Churn Risk Breakdown</h2>
                             </div>
                         </div>
@@ -215,7 +291,15 @@
                     <div class="lightning-card">
                         <div class="lightning-card__header">
                             <div class="lightning-card__header-title">
-                                <span class="lightning-card__header-icon">🏆</span>
+                                <span class="lightning-card__header-icon">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #b8860b;">
+                                        <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                                        <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                                        <path d="M4 22h16"></path>
+                                        <path d="M10 14.66V17c0 .55-.45 1-1 1H4v2h16v-2h-5c-.55 0-1-.45-1-1v-2.34"></path>
+                                        <path d="M12 2a6 6 0 0 1 6 6v5a6 6 0 0 1-6 6 6 6 0 0 1-6-6V8a6 6 0 0 1 6-6z"></path>
+                                    </svg>
+                                </span>
                                 <h2>Loyalty Tier Distribution</h2>
                             </div>
                         </div>
@@ -228,24 +312,28 @@
                 </div>
 
                 <!-- Executive Glossary Card -->
-                <div class="lightning-card" style="margin-top: 20px; border-left: 4px solid var(--slds-color-warning); margin-bottom: 20px;">
+                <div class="lightning-card" style="margin-top: 20px; margin-bottom: 20px;">
                     <div class="lightning-card__header">
                         <div class="lightning-card__header-title">
-                            <span class="lightning-card__header-icon">💡</span>
+                            <span class="lightning-card__header-icon">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--sf-warning);">
+                                    <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                                </svg>
+                            </span>
                             <h2>Executive Metrics Glossary & Churn Logic</h2>
                         </div>
                     </div>
                     <div class="lightning-card__body" style="padding: 15px; font-size: 13px; line-height: 1.6;">
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
                             <div>
-                                <h3 style="font-weight: bold; margin-bottom: 6px; color: var(--slds-color-text-main);">📊 KPI Definitions</h3>
+                                <h3 style="font-weight: bold; margin-bottom: 6px; color: var(--slds-color-text-main);">KPI Definitions</h3>
                                 <ul style="list-style-type: disc; padding-left: 20px;">
                                     <li><strong>Revenue at Risk (Churn):</strong> Total Predicted 2025 CLV of all customers categorized with <strong>High Churn Risk</strong> (P(churn) &gt; 65%). These accounts represent immediate revenue exposure.</li>
                                     <li><strong>Upsell Value Potential:</strong> Expected additional spend if customers mismatching their calculated loyalty tier (e.g., Bronze but showing Gold-like behavior) are successfully targeted and upgraded.</li>
                                 </ul>
                             </div>
                             <div>
-                                <h3 style="font-weight: bold; margin-bottom: 6px; color: var(--slds-color-text-main);">🧠 Churn Classification Rules</h3>
+                                <h3 style="font-weight: bold; margin-bottom: 6px; color: var(--slds-color-text-main);">Churn Classification Rules</h3>
                                 <ul style="list-style-type: disc; padding-left: 20px;">
                                     <li><strong>Target (is_churned):</strong> Defined as a customer active in 2022/2023 who had no purchases in 2024.</li>
                                     <li><strong>Churn Risk Categories:</strong> Evaluated based on purchase recency, spend trend, email open rate, and mobile app usage:
@@ -298,7 +386,12 @@
                     <div class="lightning-card">
                         <div class="lightning-card__header">
                             <div class="lightning-card__header-title">
-                                <span class="lightning-card__header-icon">📈</span>
+                                <span class="lightning-card__header-icon">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                                        <polyline points="17 6 23 6 23 12"></polyline>
+                                    </svg>
+                                </span>
                                 <h2>Historical Spend vs. Predicted CLV Trend</h2>
                             </div>
                         </div>
@@ -312,7 +405,13 @@
                     <div class="lightning-card">
                         <div class="lightning-card__header">
                             <div class="lightning-card__header-title">
-                                <span class="lightning-card__header-icon">📊</span>
+                                <span class="lightning-card__header-icon">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="18" y1="20" x2="18" y2="10"></line>
+                                        <line x1="12" y1="20" x2="12" y2="4"></line>
+                                        <line x1="6" y1="20" x2="6" y2="14"></line>
+                                    </svg>
+                                </span>
                                 <h2>Average Predicted CLV by Acquisition Cohort</h2>
                             </div>
                         </div>
@@ -328,7 +427,11 @@
             <!-- Model Status Warning (When predictions are not run yet) -->
             <div id="dashboardPlaceholder" class="dashboard-placeholder">
                 <div class="placeholder-content">
-                    <span class="placeholder-icon">🤖</span>
+                    <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--sf-border-strong); margin: 0 auto 12px; display: block;">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                        <line x1="8" y1="21" x2="16" y2="21"></line>
+                        <line x1="12" y1="17" x2="12" y2="21"></line>
+                    </svg>
                     <h3>Model Predictions Pending</h3>
                     <p>Click the <strong>"Run XGBoost Model"</strong> button in the page header to load records, train the model, and view lifetime value analytics.</p>
                 </div>
@@ -340,11 +443,22 @@
              ========================================== -->
         <div id="tab-accounts" class="tab-content" style="display: none;">
             
-            <!-- List Controls Bar -->
-            <div class="slds-list-controls">
+        <!-- Segment filter active banner -->
+        <div id="segmentFilterBanner" class="segment-filter-banner" style="display: none;">
+            <span id="segmentFilterLabel">Viewing segment</span>
+            <button class="segment-filter-clear" id="clearSegmentFilterBtn">✕ Clear Segment Filter</button>
+        </div>
+
+        <!-- List Controls Bar -->
+        <div class="slds-list-controls">
                 <div class="list-controls-left">
                     <div class="list-search-wrapper">
-                        <span class="list-search-icon">🔍</span>
+                        <span class="list-search-icon">
+                            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                        </span>
                         <input type="text" id="listSearchInput" placeholder="Filter this list...">
                     </div>
                     
@@ -392,9 +506,9 @@
                         <label for="priorityFilter">CRM Priority:</label>
                         <select id="priorityFilter">
                             <option value="all">All Priorities</option>
-                            <option value="Immediate Retention">🔴 Immediate Retention</option>
-                            <option value="Targeted Campaign">🟡 Targeted Campaign</option>
-                            <option value="Maintain">🟢 Maintain / Keep</option>
+                            <option value="Immediate Retention">Immediate Retention</option>
+                            <option value="Targeted Campaign">Targeted Campaign</option>
+                            <option value="Maintain">Maintain / Keep</option>
                             <option value="none">No Action</option>
                         </select>
                     </div>
@@ -409,8 +523,18 @@
             <div id="bulkActionBar" class="bulk-action-bar" style="display: none;">
                 <span id="bulkActionText">0 accounts selected</span>
                 <div class="bulk-action-buttons">
-                    <button id="bulkCampaignBtn" class="btn btn-primary btn-sm">🚀 Create Salesforce Retention Campaign</button>
-                    <button id="bulkSyncBtn" class="btn btn-secondary btn-sm">☁️ Sync Selected to Salesforce</button>
+                    <button id="bulkCampaignBtn" class="btn btn-primary btn-sm">
+                        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;">
+                            <polygon points="12 2 2 22 12 17 22 22 12 2"></polygon>
+                        </svg>
+                        Create Salesforce Retention Campaign
+                    </button>
+                    <button id="bulkSyncBtn" class="btn btn-secondary btn-sm">
+                        <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" style="margin-right: 4px;">
+                            <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+                        </svg>
+                        Sync Selected to Salesforce
+                    </button>
                 </div>
             </div>
 
@@ -421,7 +545,14 @@
                 <div class="lightning-card table-card">
                     <div class="lightning-card__header">
                         <div class="lightning-card__header-title">
-                            <span class="lightning-card__header-icon">👥</span>
+                            <span class="lightning-card__header-icon">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="9" cy="7" r="4"></circle>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                </svg>
+                            </span>
                             <h2>Account Records</h2>
                         </div>
                     </div>
@@ -455,7 +586,12 @@
                 <div class="lightning-card details-card" id="detailsPanel">
                     <div class="lightning-card__header">
                         <div class="lightning-card__header-title">
-                            <span class="lightning-card__header-icon">📄</span>
+                            <span class="lightning-card__header-icon">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                </svg>
+                            </span>
                             <h2>Account Detail Panel</h2>
                         </div>
                     </div>
@@ -463,7 +599,10 @@
                         
                         <!-- Default empty state -->
                         <div class="details-empty-state">
-                            <span class="details-empty-icon">👈</span>
+                            <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--sf-border-strong); margin: 0 auto 12px; display: block;">
+                                <line x1="19" y1="12" x2="5" y2="12"></line>
+                                <polyline points="12 19 5 12 12 5"></polyline>
+                            </svg>
                             <h3>No Account Selected</h3>
                             <p>Select a customer record from the list to view demographics, historical spend, predicted CLV, and recommendations.</p>
                         </div>
@@ -482,19 +621,26 @@
                 <div class="tier-migration-wrapper" id="tierMigrationSection">
                     <div class="campaign-header-row">
                         <div>
-                            <h2>🎯 Campaign & Loyalty Tier Migrations</h2>
+                            <h2>Campaign & Loyalty Tier Migrations</h2>
                             <p class="section-subtitle">Recommended actions based on predicted loyalty shifts</p>
                         </div>
                         <div class="migration-filters">
                             <button class="filter-btn active" data-filter="all">All Campaigns</button>
-                            <button class="filter-btn" data-filter="upsell">📈 Upsell Tier</button>
-                            <button class="filter-btn" data-filter="downgrade">⚠️ Churn Risk</button>
+                            <button class="filter-btn" data-filter="upsell">Upsell Tier</button>
+                            <button class="filter-btn" data-filter="downgrade">Churn Risk</button>
                         </div>
                     </div>
                     
                     <div id="migrationContainer" class="migration-container">
                         <div class="no-migrations">
-                            <div class="no-migrations-icon">🤖</div>
+                            <div class="no-migrations-icon" style="color: var(--sf-border-strong); margin-bottom: 12px; display: block;">
+                                <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto;">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                                </svg>
+                            </div>
                             <h3>No Campaign Recommendations Loaded</h3>
                             <p>Run the XGBoost model predictions first to discover upsell opportunities and churn risk accounts.</p>
                         </div>
@@ -505,7 +651,11 @@
                 <div class="lightning-card crm-sync-card">
                     <div class="lightning-card__header" style="background-color: #f3f3f2; border-bottom: 1px solid #d8dde6;">
                         <div class="lightning-card__header-title">
-                            <span class="lightning-card__header-icon">☁️</span>
+                            <span class="lightning-card__header-icon">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                                    <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+                                </svg>
+                            </span>
                             <h2>Salesforce CRM Integration Hub</h2>
                         </div>
                     </div>
@@ -527,7 +677,10 @@
                             </div>
 
                             <button id="crmSyncAllBtn" class="btn btn-primary btn-block" style="width: 100%; margin: 15px 0;" disabled>
-                                ☁️ Sync All Recommendations to Salesforce CRM
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="margin-right: 6px;">
+                                    <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+                                </svg>
+                                Sync All Recommendations to Salesforce CRM
                             </button>
 
                             <div class="sync-history-log">
@@ -540,19 +693,88 @@
                     </div>
                 </div>
             </div>
+
+        <!-- Workflow Trigger Log -->
+        <div class="lightning-card workflow-log-card" id="workflowLogCard" style="margin-top: 18px;">
+            <div class="lightning-card__header">
+                <div class="lightning-card__header-title">
+                    <span class="lightning-card__header-icon">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                        </svg>
+                    </span>
+                    <h2>Workflow Action Log</h2>
+                </div>
+                <button class="btn btn-secondary btn-xs" id="clearWorkflowLogBtn">Clear Log</button>
+            </div>
+            <div class="lightning-card__body workflow-log-body" id="workflowLogBody">
+                <div class="workflow-empty-state">No workflow actions logged yet. Trigger actions from Account details or Campaign cards.</div>
+            </div>
+        </div>
+
         </div>
 
         <!-- ==========================================
              TAB 4: MODEL PERFORMANCE VIEW
              ========================================== -->
         <div id="tab-performance" class="tab-content" style="display: none;">
+
+            <!-- Model Health Card (full width, above the grid) -->
+            <div class="lightning-card model-health-card" style="margin-bottom: 18px;">
+                <div class="lightning-card__header">
+                    <div class="lightning-card__header-title">
+                        <span class="lightning-card__header-icon">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="23 4 23 10 17 10"></polyline>
+                                <polyline points="1 20 1 14 7 14"></polyline>
+                                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                            </svg>
+                        </span>
+                        <h2>Model Health &amp; Lifecycle Management</h2>
+                    </div>
+                </div>
+                <div class="lightning-card__body">
+                    <div class="model-health-grid">
+                        <div class="model-health-stat">
+                            <div class="model-health-label">Model Status</div>
+                            <div class="model-health-value" id="mhStatus">—</div>
+                        </div>
+                        <div class="model-health-stat">
+                            <div class="model-health-label">Last Trained</div>
+                            <div class="model-health-value" id="mhTrainedAt">—</div>
+                        </div>
+                    </div>
+                    <div class="drift-section">
+                        <div class="drift-title">Current Data Snapshot</div>
+                        <div class="drift-grid" id="mhDriftGrid">
+                            <div class="drift-item" style="color: var(--sf-muted); font-size: 11px;">Load data to view snapshot.</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 14px; margin-top: 14px; flex-wrap: wrap;">
+                        <button class="btn btn-primary" id="retrainModelBtn">
+                            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;">
+                                <polyline points="23 4 23 10 17 10"></polyline>
+                                <path d="M20.49 15a9 9 0 1 1-12.42-8.24l5.12 4.12"></path>
+                            </svg>
+                            Retrain Model Now
+                        </button>
+                        <div id="retrainStatus" class="status-message"></div>
+                    </div>
+                </div>
+            </div>
+
             <div class="performance-layout">
                 
                 <!-- Metrics and Params -->
                 <div class="lightning-card">
                     <div class="lightning-card__header">
                         <div class="lightning-card__header-title">
-                            <span class="lightning-card__header-icon">⚙️</span>
+                            <span class="lightning-card__header-icon">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                                </svg>
+                            </span>
                             <h2>XGBoost Regressor Diagnostics</h2>
                         </div>
                     </div>
@@ -585,7 +807,7 @@
                         </div>
 
                         <div class="feature-importance-section">
-                            <h3>🔍 Primary Prediction Features</h3>
+                            <h3>Primary Prediction Features</h3>
                             <p class="feature-intro">The model computes predicted CLV using winsorized historical trends, digital engagement indices, and customer behavior features:</p>
                             
                             <ul class="features-list">
@@ -613,9 +835,15 @@
                 <div class="lightning-card">
                     <div class="lightning-card__header">
                         <div class="lightning-card__header-title">
-                            <span class="lightning-card__header-icon">🎯</span>
-                            <h2>Prediction Error Distribution</h2>
-                        </div>
+                        <span class="lightning-card__header-icon">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <circle cx="12" cy="12" r="6"></circle>
+                                <circle cx="12" cy="12" r="2"></circle>
+                            </svg>
+                        </span>
+                        <h2>Prediction Error Distribution</h2>
+                    </div>
                     </div>
                     <div class="lightning-card__body">
                         <div class="chart-container">
@@ -628,9 +856,15 @@
                 <div class="lightning-card">
                     <div class="lightning-card__header">
                         <div class="lightning-card__header-title">
-                            <span class="lightning-card__header-icon">⚖️</span>
-                            <h2>Global Feature Importance (SHAP Values)</h2>
-                        </div>
+                        <span class="lightning-card__header-icon">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="20" x2="18" y2="10"></line>
+                                <line x1="12" y1="20" x2="12" y2="4"></line>
+                                <line x1="6" y1="20" x2="6" y2="14"></line>
+                            </svg>
+                        </span>
+                        <h2>Global Feature Importance (SHAP Values)</h2>
+                    </div>
                     </div>
                     <div class="lightning-card__body">
                         <div class="chart-container">
@@ -643,9 +877,14 @@
                 <div class="lightning-card">
                     <div class="lightning-card__header">
                         <div class="lightning-card__header-title">
-                            <span class="lightning-card__header-icon">📈</span>
-                            <h2>Actual vs Predicted CLV Relationship</h2>
-                        </div>
+                        <span class="lightning-card__header-icon">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                                <polyline points="17 6 23 6 23 12"></polyline>
+                            </svg>
+                        </span>
+                        <h2>Actual vs Predicted CLV Relationship</h2>
+                    </div>
                     </div>
                     <div class="lightning-card__body">
                         <div class="chart-container">
@@ -658,9 +897,15 @@
                 <div class="lightning-card">
                     <div class="lightning-card__header">
                         <div class="lightning-card__header-title">
-                            <span class="lightning-card__header-icon">📊</span>
-                            <h2>CLV Distribution Analysis</h2>
-                        </div>
+                        <span class="lightning-card__header-icon">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="20" x2="18" y2="10"></line>
+                                <line x1="12" y1="20" x2="12" y2="4"></line>
+                                <line x1="6" y1="20" x2="6" y2="14"></line>
+                            </svg>
+                        </span>
+                        <h2>CLV Distribution Analysis</h2>
+                    </div>
                     </div>
                     <div class="lightning-card__body">
                         <div class="chart-container">
@@ -672,6 +917,44 @@
             </div>
         </div>
 
+    </div>
+
+    <!-- Campaign Builder Modal -->
+    <div id="campaignBuilderModal" class="modal" style="display: none;">
+        <div class="modal-content campaign-modal-content">
+            <div class="campaign-modal-header">
+                <div>
+                    <h2>Campaign Builder</h2>
+                    <p class="campaign-modal-subtitle">Configure and launch a targeted campaign for the selected accounts.</p>
+                </div>
+                <button class="campaign-modal-close" id="closeCampaignModal">✕</button>
+            </div>
+            <div class="campaign-audience-info" id="campaignAudienceInfo"></div>
+            <div class="campaign-type-selector">
+                <div class="campaign-type-label">Select Campaign Type:</div>
+                <div class="campaign-type-options">
+                    <label class="campaign-type-option">
+                        <input type="radio" name="campaignType" value="high_touch" checked>
+                        <span class="campaign-type-badge">High-Touch Personal Call</span>
+                        <span class="campaign-type-desc">Senior rep contacts each account directly</span>
+                    </label>
+                    <label class="campaign-type-option">
+                        <input type="radio" name="campaignType" value="email">
+                        <span class="campaign-type-badge">Automated Email Campaign</span>
+                        <span class="campaign-type-desc">Enrol accounts in the digital retention email sequence</span>
+                    </label>
+                    <label class="campaign-type-option">
+                        <input type="radio" name="campaignType" value="exclude">
+                        <span class="campaign-type-badge">Exclude from All Campaigns</span>
+                        <span class="campaign-type-desc">Mark these accounts as suppressed from outreach</span>
+                    </label>
+                </div>
+            </div>
+            <div class="campaign-modal-actions">
+                <button class="btn btn-primary" id="launchCampaignBtn">Launch Campaign</button>
+                <button class="btn btn-secondary" id="cancelCampaignBtn">Cancel</button>
+            </div>
+        </div>
     </div>
 
     <!-- Salesforce style Modal loader dialog -->
