@@ -1,10 +1,20 @@
-# Dataset — citlivá firemní data
+# Dataset — citlivá firemní data (sensitive business data)
 dataset.xlsx
 *.xlsx
 *.xls
 
+# Zdrojová CSV data (raw source data — sensitive)
+csv/
+
+# Trénované modely (large binary files — reproducible)
+models/*.pkl
+
+# Výstupy notebooků (generated CSV outputs — reproducible)
+outputs/
+notebooks/outputs/
+
 # Python
-__pycache__/
+**/__pycache__/
 *.py[cod]
 *.pyo
 .Python
@@ -15,10 +25,7 @@ build/
 
 # Jupyter
 .ipynb_checkpoints/
-*/.ipynb_checkpoints/
-
-# Výstupy — PNG grafy (velké soubory, reprodukovatelné)
-outputs/*.png
+**/.ipynb_checkpoints/
 
 # Virtuální prostředí
 venv/
@@ -35,3 +42,4 @@ env/
 # OS
 .DS_Store
 Thumbs.db
+desktop.ini

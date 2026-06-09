@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLV Prediction Manager | Salesforce Lightning</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+</head>
+<body>
+    <!-- Salesforce Global Header -->
+    <header class="slds-global-header">
+        <div class="slds-global-header__left">
+            <div class="slds-app-launcher" title="App Launcher">
+                <div></div><div></div><div></div>
+                <div></div><div></div><div></div>
+                <div></div><div></div><div></div>
+            </div>
+            <div class="slds-logo-container">
+                <span class="slds-logo-cloud">☁️</span>
+                <span class="slds-logo-text">salesforce</span>
+            </div>
+        </div>
+        
+        <!-- Salesforce Global Search Bar -->
+        <div class="slds-global-header__search">
+            <div class="slds-search-input-wrapper">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="globalSearchInput" placeholder="Search accounts by name or ID..." aria-label="Search accounts">
+            </div>
+        </div>
+
+        <div class="slds-global-header__right">
+            <!-- Global Utilities -->
+            <button class="slds-header-icon-btn" title="Help">❓</button>
+            <button class="slds-header-icon-btn" title="Setup">⚙️</button>
+            <button class="slds-header-icon-btn" title="Notifications">🔔</button>
+            
+            <div class="slds-user-profile">
+                <div class="slds-avatar">DA</div>
+                <div class="slds-user-info">
+                    <span class="user-name">David Analyst</span>
+                    <span class="user-role">System Admin</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- App Navigation Tabs Bar -->
+    <nav class="slds-nav-bar">
+        <div class="slds-nav-bar__app-name">
+            CLV Analytics
+            <span class="app-dropdown-arrow">▼</span>
+        </div>
+        <ul class="slds-nav-bar__tabs">
+            <li class="slds-nav-bar__tab-item active" data-tab="dashboard">Dashboard</li>
+            <li class="slds-nav-bar__tab-item" data-tab="accounts">Accounts</li>
+            <li class="slds-nav-bar__tab-item" data-tab="campaigns">Loyalty Campaigns</li>
+            <li class="slds-nav-bar__tab-item" data-tab="performance">Model Performance</li>
+        </ul>
+    </nav>
+
+    <!-- Salesforce Page Header with action buttons -->
+    <div class="slds-page-header">
+        <div class="slds-page-header__left">
+            <div class="slds-page-header__icon">💼</div>
+            <div class="slds-page-header__title-wrapper">
+                <span class="slds-page-header__breadcrumb">Analytics &bull; Customer Lifetime Value</span>
+                <h1 class="slds-page-header__title" id="pageHeaderTitle">CLV Prediction Dashboard</h1>
+            </div>
+        </div>
+        <div class="slds-page-header__actions">
+            <div class="control-right">
+                <div class="loading-indicator" id="loadingIndicator" style="display: none;">
+                    <div class="spinner"></div>
+                    <span id="loadingText">Processing...</span>
+                </div>
+                <div id="statusMessage" class="status-message"></div>
+            </div>
+            <button id="predictBtn" class="btn btn-primary">
+                <span class="btn-icon">⚡</span>
+                Run XGBoost Model
+            </button>
+            <button id="exportBtn" class="btn btn-secondary" disabled>
+                <span class="btn-icon">💾</span>
+                Export Predictions
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Workspace Container -->
+    <div class="container">
+        
+        <!-- ==========================================
+             TAB 1: DASHBOARD VIEW
+             ========================================== -->
+        <div id="tab-dashboard" class="tab-content active-content">
+            <!-- Action Center (Critical Summary) -->
+            <div id="actionCenterPanel" class="action-center-panel" style="display: none;">
+                <div class="action-center-header">
+                    <span class="action-center-icon">📢</span>
+                    <h2>Action Center & Attention Summary</h2>
+                </div>
+                <div class="action-center-body">
+                    <div class="action-center-kpi" id="actionRetentionTarget">
+                        <span class="kpi-icon">🔴</span>
+                        <div>
+                            <strong id="actionRetentionCount">0</strong>
+                            <span class="kpi-desc">Accounts need immediate retention outreach (High Churn Risk)</span>
+                        </div>
+                    </div>
+                    <div class="action-center-kpi" id="actionCampaignTarget">
+                        <span class="kpi-icon">🟡</span>
+                        <div>
+                            <strong id="actionCampaignCount">0</strong>
+                            <span class="kpi-desc">Accounts recommended for loyalty campaigns (Medium Churn Risk)</span>
+                        </div>
+                    </div>
+                    <div class="action-center-kpi" id="actionSyncTarget">
+                        <span class="kpi-icon">☁️</span>
+                        <div>
+                            <strong id="actionSyncCount">0</strong>
+                            <span class="kpi-desc">Loyalty tier mismatches pending Salesforce CRM sync</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Sub-Tabs -->
+            <div id="dashboardSubTabs" class="dashboard-sub-tabs" style="display: none;">
+                <button class="sub-tab-btn active" data-subtab="operational">📋 Operational Overview (Analyst)</button>
+                <button class="sub-tab-btn" data-subtab="strategic">📊 Strategic Overview (CFO & Executive)</button>
+            </div>
+
+            <!-- Operational Analyst View Container -->
+            <div id="operationalViewContent" class="dashboard-subtab-content" style="display: block;">
+                <!-- Highlight Panel / Statistics Grid -->
+                <div id="statsPanel" class="stats-panel" style="display: none;">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">Total Accounts</div>
+                            <div class="stat-value" id="statTotalPredictions">-</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Mean Actual CLV</div>
+                            <div class="stat-value" id="statMeanActual">-</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Mean Predicted CLV</div>
+                            <div class="stat-value" id="statMeanPredicted">-</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Mean Absolute Error</div>
+                            <div class="stat-value" id="statMAE">-</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Tier Accuracy</div>
+                            <div class="stat-value" id="statTierAccuracy">-</div>
+                        </div>
+                        <div class="stat-card stat-card-risk">
+                            <div class="stat-label">Revenue at Risk (Churn)</div>
+                            <div class="stat-value value-negative" id="statRevenueAtRisk">-</div>
+                        </div>
+                        <div class="stat-card stat-card-upsell">
+                            <div class="stat-label">Upsell Value Potential</div>
+                            <div class="stat-value value-positive" id="statUpsellOpportunity">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Executive Calibration Panel -->
+                <div id="calibrationPanel" class="lightning-card threshold-card" style="display: none; margin-bottom: 20px; border-left: 4px solid var(--slds-color-brand);">
+                    <div class="lightning-card__header">
+                        <div class="lightning-card__header-title">
+                            <span class="lightning-card__header-icon">⚙️</span>
+                            <h2>Loyalty Tier Calibration (Dynamic Simulation)</h2>
+                        </div>
+                    </div>
+                    <div class="lightning-card__body">
+                        <div class="threshold-sliders-layout">
+                            <div class="slider-group">
+                                <label for="bronzeSilverThreshold" class="slider-label">Bronze ➔ Silver Threshold: <strong id="bronzeSilverVal">$5,000</strong></label>
+                                <input type="range" id="bronzeSilverThreshold" min="1000" max="15000" step="500" value="5000" class="styled-slider">
+                            </div>
+                            <div class="slider-group">
+                                <label for="silverGoldThreshold" class="slider-label">Silver ➔ Gold Threshold: <strong id="silverGoldVal"> $25,000</strong></label>
+                                <input type="range" id="silverGoldThreshold" min="15000" max="75000" step="1000" value="25000" class="styled-slider">
+                            </div>
+                            <div class="preset-buttons">
+                                <span class="presets-label">Preset Audits:</span>
+                                <button id="presetDefault" class="btn btn-secondary btn-xs">Reset Default (5k/25k)</button>
+                                <button id="presetAggressive" class="btn btn-secondary btn-xs">Growth Capture (8k/30k)</button>
+                                <button id="presetConservative" class="btn btn-secondary btn-xs">Low Barrier (3k/15k)</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dashboard Visual Layout (Charts side by side) -->
+                <div class="dashboard-charts-layout">
+                    <div class="lightning-card">
+                        <div class="lightning-card__header">
+                            <div class="lightning-card__header-title">
+                                <span class="lightning-card__header-icon">⚠️</span>
+                                <h2>Customer Churn Risk Breakdown</h2>
+                            </div>
+                        </div>
+                        <div class="lightning-card__body">
+                            <div class="chart-container">
+                                <canvas id="churnDistributionChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lightning-card">
+                        <div class="lightning-card__header">
+                            <div class="lightning-card__header-title">
+                                <span class="lightning-card__header-icon">🏆</span>
+                                <h2>Loyalty Tier Distribution</h2>
+                            </div>
+                        </div>
+                        <div class="lightning-card__body">
+                            <div class="chart-container">
+                                <canvas id="tierDistributionChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Executive Glossary Card -->
+                <div class="lightning-card" style="margin-top: 20px; border-left: 4px solid var(--slds-color-warning); margin-bottom: 20px;">
+                    <div class="lightning-card__header">
+                        <div class="lightning-card__header-title">
+                            <span class="lightning-card__header-icon">💡</span>
+                            <h2>Executive Metrics Glossary & Churn Logic</h2>
+                        </div>
+                    </div>
+                    <div class="lightning-card__body" style="padding: 15px; font-size: 13px; line-height: 1.6;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                            <div>
+                                <h3 style="font-weight: bold; margin-bottom: 6px; color: var(--slds-color-text-main);">📊 KPI Definitions</h3>
+                                <ul style="list-style-type: disc; padding-left: 20px;">
+                                    <li><strong>Revenue at Risk (Churn):</strong> Total Predicted 2025 CLV of all customers categorized with <strong>High Churn Risk</strong> (P(churn) &gt; 65%). These accounts represent immediate revenue exposure.</li>
+                                    <li><strong>Upsell Value Potential:</strong> Expected additional spend if customers mismatching their calculated loyalty tier (e.g., Bronze but showing Gold-like behavior) are successfully targeted and upgraded.</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h3 style="font-weight: bold; margin-bottom: 6px; color: var(--slds-color-text-main);">🧠 Churn Classification Rules</h3>
+                                <ul style="list-style-type: disc; padding-left: 20px;">
+                                    <li><strong>Target (is_churned):</strong> Defined as a customer active in 2022/2023 who had no purchases in 2024.</li>
+                                    <li><strong>Churn Risk Categories:</strong> Evaluated based on purchase recency, spend trend, email open rate, and mobile app usage:
+                                        <ul style="list-style-type: circle; padding-left: 15px; margin-top: 4px;">
+                                            <li><span class="risk-badge low">Low Risk</span>: P(churn) &le; 35%</li>
+                                            <li><span class="risk-badge medium">Medium Risk</span>: 35% &lt; P(churn) &le; 65%</li>
+                                            <li><span class="risk-badge high">High Risk</span>: P(churn) &gt; 65%</li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Strategic View (CFO & Executive) Container -->
+            <div id="strategicViewContent" class="dashboard-subtab-content" style="display: none;">
+                <!-- CFO Wording Card -->
+                <div class="cfo-intro-card">
+                    This section is designed for management and Chief Financial Officers (CFO). It displays the overall state of the customer base and its future value.
+                </div>
+
+                <!-- CFO High-Level KPI Cards Grid -->
+                <div class="cfo-stats-grid">
+                    <div class="cfo-stat-card">
+                        <div class="cfo-stat-label">Predicted Portfolio Value</div>
+                        <div class="cfo-stat-value" id="cfoPortfolioValue">-</div>
+                        <div class="cfo-stat-subtitle">Predicted CLV sum of all active customers (12-month window)</div>
+                    </div>
+                    <div class="cfo-stat-card">
+                        <div class="cfo-stat-label">Average Predicted CLV per Customer</div>
+                        <div class="cfo-stat-value" id="cfoAvgPredictedCLV">-</div>
+                        <div class="cfo-stat-subtitle">Expected future spend expansion per customer</div>
+                    </div>
+                    <div class="cfo-stat-card">
+                        <div class="cfo-stat-label">Poměr CLV : CAC</div>
+                        <div class="cfo-stat-value" id="cfoClvCacRatio">-</div>
+                        <div class="cfo-stat-subtitle">Business health metric (CAC Baseline: $2,800, Target &gt; 3:1)</div>
+                    </div>
+                    <div class="cfo-stat-card">
+                        <div class="cfo-stat-label">Predicted Churn Rate</div>
+                        <div class="cfo-stat-value" id="cfoChurnRate">-</div>
+                        <div class="cfo-stat-subtitle">Average predicted portfolio churn probability</div>
+                    </div>
+                </div>
+
+                <!-- CFO Visual Trends Layout (Charts) -->
+                <div class="cfo-charts-layout">
+                    <div class="lightning-card">
+                        <div class="lightning-card__header">
+                            <div class="lightning-card__header-title">
+                                <span class="lightning-card__header-icon">📈</span>
+                                <h2>Historical Spend vs. Predicted CLV Trend</h2>
+                            </div>
+                        </div>
+                        <div class="lightning-card__body">
+                            <div class="chart-container-cfo">
+                                <canvas id="historicalVsPredictedChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lightning-card">
+                        <div class="lightning-card__header">
+                            <div class="lightning-card__header-title">
+                                <span class="lightning-card__header-icon">📊</span>
+                                <h2>Average Predicted CLV by Acquisition Cohort</h2>
+                            </div>
+                        </div>
+                        <div class="lightning-card__body">
+                            <div class="chart-container-cfo">
+                                <canvas id="cohortAnalysisChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Model Status Warning (When predictions are not run yet) -->
+            <div id="dashboardPlaceholder" class="dashboard-placeholder">
+                <div class="placeholder-content">
+                    <span class="placeholder-icon">🤖</span>
+                    <h3>Model Predictions Pending</h3>
+                    <p>Click the <strong>"Run XGBoost Model"</strong> button in the page header to load records, train the model, and view lifetime value analytics.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             TAB 2: ACCOUNTS LIST VIEW (Split Workspace)
+             ========================================== -->
+        <div id="tab-accounts" class="tab-content" style="display: none;">
+            
+            <!-- List Controls Bar -->
+            <div class="slds-list-controls">
+                <div class="list-controls-left">
+                    <div class="list-search-wrapper">
+                        <span class="list-search-icon">🔍</span>
+                        <input type="text" id="listSearchInput" placeholder="Filter this list...">
+                    </div>
+                    
+                    <div class="list-filter-dropdown">
+                        <label for="regionFilter">Region:</label>
+                        <select id="regionFilter">
+                            <option value="all">All Regions</option>
+                            <option value="North">North</option>
+                            <option value="South">South</option>
+                            <option value="East">East</option>
+                            <option value="West">West</option>
+                        </select>
+                    </div>
+
+                    <div class="list-filter-dropdown">
+                        <label for="tierFilter">Suggested Tier:</label>
+                        <select id="tierFilter">
+                            <option value="all">All Tiers</option>
+                            <option value="Gold">Gold</option>
+                            <option value="Silver">Silver</option>
+                            <option value="Bronze">Bronze</option>
+                        </select>
+                    </div>
+
+                    <div class="list-filter-dropdown">
+                        <label for="matchFilter">Tier Match:</label>
+                        <select id="matchFilter">
+                            <option value="all">All Records</option>
+                            <option value="match">Match (Correct Tier)</option>
+                            <option value="mismatch">Mismatch (Tier Shift)</option>
+                        </select>
+                    </div>
+
+                    <div class="list-filter-dropdown">
+                        <label for="churnFilter">Churn Risk:</label>
+                        <select id="churnFilter">
+                            <option value="all">All Risk Levels</option>
+                            <option value="High">High Risk</option>
+                            <option value="Medium">Medium Risk</option>
+                            <option value="Low">Low Risk</option>
+                        </select>
+                    </div>
+
+                    <div class="list-filter-dropdown">
+                        <label for="priorityFilter">CRM Priority:</label>
+                        <select id="priorityFilter">
+                            <option value="all">All Priorities</option>
+                            <option value="Immediate Retention">🔴 Immediate Retention</option>
+                            <option value="Targeted Campaign">🟡 Targeted Campaign</option>
+                            <option value="Maintain">🟢 Maintain / Keep</option>
+                            <option value="none">No Action</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="list-controls-right">
+                    <span class="records-count" id="recordsCount">0 items</span>
+                </div>
+            </div>
+
+            <!-- Bulk Action Bar -->
+            <div id="bulkActionBar" class="bulk-action-bar" style="display: none;">
+                <span id="bulkActionText">0 accounts selected</span>
+                <div class="bulk-action-buttons">
+                    <button id="bulkCampaignBtn" class="btn btn-primary btn-sm">🚀 Create Salesforce Retention Campaign</button>
+                    <button id="bulkSyncBtn" class="btn btn-secondary btn-sm">☁️ Sync Selected to Salesforce</button>
+                </div>
+            </div>
+
+            <!-- Two Column Split View -->
+            <div class="accounts-split-layout">
+                
+                <!-- Left: Compact Table Card -->
+                <div class="lightning-card table-card">
+                    <div class="lightning-card__header">
+                        <div class="lightning-card__header-title">
+                            <span class="lightning-card__header-icon">👥</span>
+                            <h2>Account Records</h2>
+                        </div>
+                    </div>
+                    <div class="lightning-card__body no-padding">
+                        <div class="table-container compact-table-container">
+                            <table id="accountsTable" class="data-table compact-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 30px; text-align: center;"><input type="checkbox" id="selectAllAccounts"></th>
+                                        <th>Account ID</th>
+                                        <th>Name</th>
+                                        <th>Region</th>
+                                        <th style="text-align: center;">Churn Risk</th>
+                                        <th style="text-align: center;">Actual Tier</th>
+                                        <th style="text-align: center;">Suggested Tier</th>
+                                        <th style="text-align: center;">Match</th>
+                                        <th style="text-align: right;">Predicted CLV</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="9" class="table-empty-state">No predictions loaded. Run the XGBoost model to view accounts.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Account Details Side Panel -->
+                <div class="lightning-card details-card" id="detailsPanel">
+                    <div class="lightning-card__header">
+                        <div class="lightning-card__header-title">
+                            <span class="lightning-card__header-icon">📄</span>
+                            <h2>Account Detail Panel</h2>
+                        </div>
+                    </div>
+                    <div class="lightning-card__body details-body" id="detailsCardBody">
+                        
+                        <!-- Default empty state -->
+                        <div class="details-empty-state">
+                            <span class="details-empty-icon">👈</span>
+                            <h3>No Account Selected</h3>
+                            <p>Select a customer record from the list to view demographics, historical spend, predicted CLV, and recommendations.</p>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             TAB 3: LOYALTY CAMPAIGNS VIEW
+             ========================================== -->
+        <div id="tab-campaigns" class="tab-content" style="display: none;">
+            <div class="campaigns-split-layout">
+                <!-- Left: Migration Cards -->
+                <div class="tier-migration-wrapper" id="tierMigrationSection">
+                    <div class="campaign-header-row">
+                        <div>
+                            <h2>🎯 Campaign & Loyalty Tier Migrations</h2>
+                            <p class="section-subtitle">Recommended actions based on predicted loyalty shifts</p>
+                        </div>
+                        <div class="migration-filters">
+                            <button class="filter-btn active" data-filter="all">All Campaigns</button>
+                            <button class="filter-btn" data-filter="upsell">📈 Upsell Tier</button>
+                            <button class="filter-btn" data-filter="downgrade">⚠️ Churn Risk</button>
+                        </div>
+                    </div>
+                    
+                    <div id="migrationContainer" class="migration-container">
+                        <div class="no-migrations">
+                            <div class="no-migrations-icon">🤖</div>
+                            <h3>No Campaign Recommendations Loaded</h3>
+                            <p>Run the XGBoost model predictions first to discover upsell opportunities and churn risk accounts.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Salesforce CRM Sync Command Panel -->
+                <div class="lightning-card crm-sync-card">
+                    <div class="lightning-card__header" style="background-color: #f3f3f2; border-bottom: 1px solid #d8dde6;">
+                        <div class="lightning-card__header-title">
+                            <span class="lightning-card__header-icon">☁️</span>
+                            <h2>Salesforce CRM Integration Hub</h2>
+                        </div>
+                    </div>
+                    <div class="lightning-card__body">
+                        <div class="sync-dashboard">
+                            <div class="sync-kpi-grid">
+                                <div class="sync-kpi-card">
+                                    <span class="sync-kpi-label">CRM Sync Status</span>
+                                    <strong id="syncStatusBadge" class="status-badge status-offline">Not Synced</strong>
+                                </div>
+                                <div class="sync-kpi-card">
+                                    <span class="sync-kpi-label">Pending Updates</span>
+                                    <strong id="pendingSyncCount" class="sync-kpi-val">0</strong>
+                                </div>
+                                <div class="sync-kpi-card">
+                                    <span class="sync-kpi-label">Synced Records</span>
+                                    <strong id="syncedRecordsCount" class="sync-kpi-val">0</strong>
+                                </div>
+                            </div>
+
+                            <button id="crmSyncAllBtn" class="btn btn-primary btn-block" style="width: 100%; margin: 15px 0;" disabled>
+                                ☁️ Sync All Recommendations to Salesforce CRM
+                            </button>
+
+                            <div class="sync-history-log">
+                                <h3 class="log-title">CRM Synchronization Audit Log</h3>
+                                <div class="log-entries" id="crmLogEntries">
+                                    <div class="log-entry empty">No synchronization events recorded. Run predictions to get started.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             TAB 4: MODEL PERFORMANCE VIEW
+             ========================================== -->
+        <div id="tab-performance" class="tab-content" style="display: none;">
+            <div class="performance-layout">
+                
+                <!-- Metrics and Params -->
+                <div class="lightning-card">
+                    <div class="lightning-card__header">
+                        <div class="lightning-card__header-title">
+                            <span class="lightning-card__header-icon">⚙️</span>
+                            <h2>XGBoost Regressor Diagnostics</h2>
+                        </div>
+                    </div>
+                    <div class="lightning-card__body">
+                        <div class="model-params-table">
+                            <div class="param-row">
+                                <span class="param-label">Model Type:</span>
+                                <span class="param-value code-text">XGBRegressor (Extreme Gradient Boosting)</span>
+                            </div>
+                            <div class="param-row">
+                                <span class="param-label">Hyperparameters:</span>
+                                <span class="param-value code-text">n_estimators=300, max_depth=6, learning_rate=0.05, subsample=0.9</span>
+                            </div>
+                            <div class="param-row">
+                                <span class="param-label">Validation Split:</span>
+                                <span class="param-value">80% Train, 20% Test (Random State 42)</span>
+                            </div>
+                            <div class="param-row">
+                                <span class="param-label">Mean Absolute Error (MAE):</span>
+                                <span class="param-value value-negative" id="perfMAE" style="font-weight: bold;">-</span>
+                            </div>
+                            <div class="param-row">
+                                <span class="param-label">Max Prediction Diff:</span>
+                                <span class="param-value" id="statMaxDiff2">-</span>
+                            </div>
+                            <div class="param-row">
+                                <span class="param-label">Min Prediction Diff:</span>
+                                <span class="param-value" id="statMinDiff2">-</span>
+                            </div>
+                        </div>
+
+                        <div class="feature-importance-section">
+                            <h3>🔍 Primary Prediction Features</h3>
+                            <p class="feature-intro">The model computes predicted CLV using winsorized historical trends, digital engagement indices, and customer behavior features:</p>
+                            
+                            <ul class="features-list">
+                                <li>
+                                    <strong>spend_2024 / monetary_total</strong>: Core historical annual baseline spending.
+                                </li>
+                                <li>
+                                    <strong>spend_trend_1y / spend_trend_2y</strong>: Winsorized year-over-year spend trajectories.
+                                </li>
+                                <li>
+                                    <strong>app_usage_score</strong>: Customer digital product loyalty index.
+                                </li>
+                                <li>
+                                    <strong>frequency / recency_days</strong>: Classic RFM purchasing behavior variables.
+                                </li>
+                                <li>
+                                    <strong>email_open_rate</strong>: Customer responsiveness to brand communications.
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Error Plot -->
+                <div class="lightning-card">
+                    <div class="lightning-card__header">
+                        <div class="lightning-card__header-title">
+                            <span class="lightning-card__header-icon">🎯</span>
+                            <h2>Prediction Error Distribution</h2>
+                        </div>
+                    </div>
+                    <div class="lightning-card__body">
+                        <div class="chart-container">
+                            <canvas id="errorChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feature Importance Chart -->
+                <div class="lightning-card">
+                    <div class="lightning-card__header">
+                        <div class="lightning-card__header-title">
+                            <span class="lightning-card__header-icon">⚖️</span>
+                            <h2>Global Feature Importance (SHAP Values)</h2>
+                        </div>
+                    </div>
+                    <div class="lightning-card__body">
+                        <div class="chart-container">
+                            <canvas id="featureImportanceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actual vs Predicted Scatter Chart -->
+                <div class="lightning-card">
+                    <div class="lightning-card__header">
+                        <div class="lightning-card__header-title">
+                            <span class="lightning-card__header-icon">📈</span>
+                            <h2>Actual vs Predicted CLV Relationship</h2>
+                        </div>
+                    </div>
+                    <div class="lightning-card__body">
+                        <div class="chart-container">
+                            <canvas id="scatterChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CLV Distribution Histogram Chart -->
+                <div class="lightning-card">
+                    <div class="lightning-card__header">
+                        <div class="lightning-card__header-title">
+                            <span class="lightning-card__header-icon">📊</span>
+                            <h2>CLV Distribution Analysis</h2>
+                        </div>
+                    </div>
+                    <div class="lightning-card__body">
+                        <div class="chart-container">
+                            <canvas id="histogramChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Salesforce style Modal loader dialog -->
+    <div id="modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h2>Executing Model</h2>
+            <p id="modalText">Running XGBoost predictions... This may take a moment.</p>
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

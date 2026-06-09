@@ -1,0 +1,1923 @@
+/* 
+ * Salesforce Lightning Design System (SLDS) Inspired Stylesheet
+ * Customer Lifetime Value (CLV) Prediction Dashboard
+ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    /* SLDS Color Palette */
+    --slds-color-background: #f3f3f2;
+    --slds-color-card-background: #ffffff;
+    --slds-color-brand: #0176d3;
+    --slds-color-brand-hover: #014486;
+    --slds-color-brand-active: #013565;
+    --slds-color-neutral-border: #dddbda;
+    --slds-color-text-main: #181818;
+    --slds-color-text-secondary: #514f4d;
+    --slds-color-text-blue: #0176d3;
+    
+    /* Semantic Colors */
+    --slds-color-success: #2e844a;
+    --slds-color-error: #ea001e;
+    --slds-color-warning: #fe5c36;
+    --slds-color-info: #0176d3;
+    
+    /* Shadows and Borders */
+    --slds-shadow-card: 0 2px 2px 0 rgba(0, 0, 0, 0.1);
+    --slds-border-radius: 4px;
+    
+    /* Tier Colors */
+    --tier-bronze-bg: #eddcd2;
+    --tier-bronze-text: #704214;
+    --tier-silver-bg: #e2e2e2;
+    --tier-silver-text: #4a4a4a;
+    --tier-gold-bg: #fff2cc;
+    --tier-gold-text: #b25900;
+}
+
+body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--slds-color-background);
+    color: var(--slds-color-text-main);
+    line-height: 1.5;
+    font-size: 13px; /* Salesforce standard base font size */
+}
+
+/* ==========================================
+ * Salesforce Global Header & Navigation Bar
+ * ========================================== */
+.slds-global-header {
+    background-color: #0a2240; /* Salesforce custom dark blue */
+    color: #ffffff;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    border-bottom: 1px solid #1a365d;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.slds-global-header__left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Salesforce App Launcher icon (9 dots) */
+.slds-app-launcher {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    opacity: 0.85;
+    transition: opacity 0.15s;
+}
+.slds-app-launcher:hover {
+    opacity: 1;
+}
+.slds-app-launcher div {
+    background-color: #ffffff;
+    border-radius: 50%;
+    width: 4px;
+    height: 4px;
+}
+
+.slds-logo-container {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.slds-logo-cloud {
+    font-size: 18px;
+}
+.slds-logo-text {
+    font-weight: 700;
+    font-size: 1.25em;
+    letter-spacing: 0.5px;
+    color: #ffffff;
+    user-select: none;
+}
+
+/* Search bar in Global Header */
+.slds-global-header__search {
+    flex: 0 1 450px;
+    margin: 0 20px;
+}
+.slds-search-input-wrapper {
+    position: relative;
+    width: 100%;
+}
+.slds-search-input-wrapper .search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #c9c7c5;
+    font-size: 13px;
+    pointer-events: none;
+}
+.slds-search-input-wrapper input {
+    width: 100%;
+    height: 32px;
+    background-color: rgba(255, 255, 255, 0.13);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 4px;
+    padding: 0 12px 0 32px;
+    color: #ffffff;
+    font-size: 12px;
+    transition: background-color 0.15s, border-color 0.15s;
+}
+.slds-search-input-wrapper input:focus {
+    background-color: #ffffff;
+    border-color: #ffffff;
+    color: var(--slds-color-text-main);
+    outline: none;
+}
+.slds-search-input-wrapper input::placeholder {
+    color: #c9c7c5;
+}
+
+.slds-global-header__right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.slds-header-icon-btn {
+    background: none;
+    border: none;
+    color: #ffffff;
+    font-size: 16px;
+    cursor: pointer;
+    opacity: 0.8;
+    transition: opacity 0.15s, transform 0.1s;
+}
+.slds-header-icon-btn:hover {
+    opacity: 1;
+    transform: scale(1.05);
+}
+
+.slds-user-profile {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    border-left: 1px solid rgba(255, 255, 255, 0.2);
+    padding-left: 16px;
+}
+.slds-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background-color: #0176d3;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 11px;
+}
+.slds-user-info {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+.slds-user-info .user-name {
+    font-size: 11px;
+    font-weight: 600;
+}
+.slds-user-info .user-role {
+    font-size: 9px;
+    color: #c9c7c5;
+}
+
+/* App Navigation Tabs Bar */
+.slds-nav-bar {
+    background-color: #ffffff;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    border-bottom: 1px solid var(--slds-color-neutral-border);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    position: sticky;
+    top: 50px;
+    z-index: 999;
+}
+
+.slds-nav-bar__app-name {
+    font-size: 1.15em;
+    font-weight: 700;
+    color: var(--slds-color-text-main);
+    margin-right: 32px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.app-dropdown-arrow {
+    font-size: 8px;
+    color: var(--slds-color-text-secondary);
+}
+
+.slds-nav-bar__tabs {
+    display: flex;
+    list-style: none;
+    height: 100%;
+    align-items: center;
+}
+
+.slds-nav-bar__tab-item {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    color: var(--slds-color-text-secondary);
+    font-weight: 600;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.15s ease;
+    user-select: none;
+}
+
+.slds-nav-bar__tab-item:hover {
+    color: var(--slds-color-brand);
+    background-color: #fcfcfc;
+}
+
+.slds-nav-bar__tab-item.active {
+    color: var(--slds-color-text-main);
+    border-bottom-color: var(--slds-color-brand);
+    background-color: #ffffff;
+}
+
+/* ==========================================
+ * Salesforce Page Header (Highlight Panel)
+ * ========================================== */
+.slds-page-header {
+    background-color: #ffffff;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--slds-color-neutral-border);
+    margin-bottom: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.slds-page-header__left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Dynamic Salesforce Header Icon style */
+.slds-page-header__icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+    background-color: #0176d3; /* Salesforce Account Icon blue */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 1.5em;
+}
+
+.slds-page-header__title-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.slds-page-header__breadcrumb {
+    font-size: 11px;
+    color: var(--slds-color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+}
+
+.slds-page-header__title {
+    font-size: 1.55em;
+    font-weight: 700;
+    color: var(--slds-color-text-main);
+}
+
+/* Action button area */
+.slds-page-header__actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+/* ==========================================
+ * Standard Lightning Layout Grid
+ * ========================================== */
+.container {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 16px 24px;
+}
+
+/* Tab contents styling */
+.tab-content {
+    animation: fadeIn 0.25s ease-in-out;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================
+ * Salesforce Buttons
+ * ========================================== */
+.btn {
+    padding: 8px 16px;
+    border-radius: var(--slds-border-radius);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s, border-color 0.15s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 32px;
+    border: 1px solid transparent;
+    user-select: none;
+}
+
+/* Brand Button (Primary Blue) */
+.btn-primary {
+    background-color: var(--slds-color-brand);
+    color: #ffffff;
+    border-color: var(--slds-color-brand);
+}
+.btn-primary:hover {
+    background-color: var(--slds-color-brand-hover);
+    border-color: var(--slds-color-brand-hover);
+}
+.btn-primary:active {
+    background-color: var(--slds-color-brand-active);
+    border-color: var(--slds-color-brand-active);
+}
+.btn-primary:disabled {
+    background-color: #c9c7c5;
+    border-color: #c9c7c5;
+    color: #ffffff;
+    cursor: not-allowed;
+}
+
+/* Neutral Button (Grey Border / White Background) */
+.btn-secondary {
+    background-color: #ffffff;
+    border-color: var(--slds-color-neutral-border);
+    color: var(--slds-color-brand);
+}
+.btn-secondary:hover:not(:disabled) {
+    background-color: #f3f3f2;
+    border-color: #c9c7c5;
+}
+.btn-secondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #ffffff;
+    border-color: var(--slds-color-neutral-border);
+}
+
+.btn-icon {
+    font-size: 14px;
+}
+
+/* Control Right Utility Status Styles */
+.control-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.loading-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--slds-color-text-secondary);
+    font-weight: 600;
+}
+
+/* Salesforce-like simple inline spinner */
+.spinner {
+    border: 2px solid #dddbda;
+    border-top: 2px solid var(--slds-color-brand);
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.status-message {
+    padding: 4px 12px;
+    border-radius: 30px;
+    font-size: 11px;
+    font-weight: 600;
+    min-height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.status-message.success {
+    background-color: #d8f3e5;
+    color: var(--slds-color-success);
+    border: 1px solid #a3e2bd;
+}
+
+.status-message.error {
+    background-color: #ffe4e6;
+    color: var(--slds-color-error);
+    border: 1px solid #fecdd3;
+}
+
+/* ==========================================
+ * Highlights Panel (Metrics Panel)
+ * ========================================== */
+.stats-panel {
+    background-color: var(--slds-color-card-background);
+    padding: 16px 20px;
+    border-radius: var(--slds-border-radius);
+    margin-bottom: 16px;
+    border: 1px solid var(--slds-color-neutral-border);
+    box-shadow: var(--slds-shadow-card);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 16px;
+}
+
+/* Highlight metrics */
+.stat-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-right: 1px solid var(--slds-color-neutral-border);
+    padding-right: 16px;
+}
+
+.stat-card:last-child {
+    border-right: none;
+    padding-right: 0;
+}
+
+.stat-label {
+    font-size: 10px;
+    color: var(--slds-color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+    font-weight: 600;
+}
+
+.stat-value {
+    font-size: 1.45em;
+    font-weight: 700;
+    color: var(--slds-color-text-main);
+}
+
+/* ==========================================
+ * Salesforce Dashboard Charts View (Tab 1)
+ * ========================================== */
+.dashboard-charts-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+.chart-container {
+    position: relative;
+    width: 100%;
+    height: 300px;
+}
+.dashboard-placeholder {
+    background-color: var(--slds-color-card-background);
+    border: 1px dashed var(--slds-color-neutral-border);
+    border-radius: var(--slds-border-radius);
+    padding: 60px 20px;
+    text-align: center;
+    margin-top: 16px;
+}
+.placeholder-content {
+    max-width: 450px;
+    margin: 0 auto;
+}
+.placeholder-icon {
+    font-size: 3em;
+    margin-bottom: 12px;
+    display: block;
+}
+.placeholder-content h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--slds-color-text-main);
+}
+.placeholder-content p {
+    color: var(--slds-color-text-secondary);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* ==========================================
+ * Accounts List Filters & Bar (Tab 2)
+ * ========================================== */
+.slds-list-controls {
+    background-color: #ffffff;
+    border: 1px solid var(--slds-color-neutral-border);
+    border-bottom: none;
+    border-radius: var(--slds-border-radius) var(--slds-border-radius) 0 0;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+.list-controls-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+.list-search-wrapper {
+    position: relative;
+    width: 220px;
+}
+.list-search-icon {
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--slds-color-text-secondary);
+    font-size: 11px;
+}
+.list-search-input-wrapper {
+    display: block;
+}
+#listSearchInput {
+    width: 100%;
+    height: 30px;
+    border: 1px solid var(--slds-color-neutral-border);
+    border-radius: 4px;
+    padding: 0 10px 0 28px;
+    font-size: 12px;
+    color: var(--slds-color-text-main);
+}
+#listSearchInput:focus {
+    border-color: var(--slds-color-brand);
+    outline: none;
+    box-shadow: 0 0 3px rgba(1, 118, 211, 0.25);
+}
+.list-filter-dropdown {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--slds-color-text-secondary);
+}
+.list-filter-dropdown select {
+    height: 30px;
+    border: 1px solid var(--slds-color-neutral-border);
+    border-radius: 4px;
+    padding: 0 10px;
+    font-size: 12px;
+    background-color: #ffffff;
+    cursor: pointer;
+}
+.list-filter-dropdown select:focus {
+    border-color: var(--slds-color-brand);
+    outline: none;
+}
+.list-controls-right {
+    font-size: 12px;
+    color: var(--slds-color-text-secondary);
+    font-weight: 600;
+}
+
+/* ==========================================
+ * Salesforce Split Panel Workspace (Tab 2)
+ * ========================================== */
+.accounts-split-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: 0;
+    border-radius: 0 0 var(--slds-border-radius) var(--slds-border-radius);
+    overflow: hidden;
+    border: 1px solid var(--slds-color-neutral-border);
+    background-color: var(--slds-color-card-background);
+}
+.accounts-split-layout .table-card,
+.accounts-split-layout .details-card {
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    margin-bottom: 0;
+}
+.accounts-split-layout .table-card {
+    border-right: 1px solid var(--slds-color-neutral-border);
+}
+
+/* Compact datatable container */
+.compact-table-container {
+    max-height: 520px;
+    border: none;
+    border-radius: 0;
+}
+.compact-table th {
+    font-size: 9px;
+    padding: 8px 10px;
+    background-color: #fafaf9;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+.compact-table td {
+    padding: 8px 10px;
+    font-size: 11.5px;
+    white-space: nowrap;
+}
+.compact-table tr {
+    cursor: pointer;
+}
+.compact-table tr.selected-row {
+    background-color: #eef4fc !important;
+    border-left: 3px solid var(--slds-color-brand);
+}
+
+.table-empty-state {
+    text-align: center;
+    padding: 40px;
+    color: var(--slds-color-text-secondary);
+    font-style: italic;
+}
+
+/* Detail Side Panel */
+.details-body {
+    padding: 16px;
+    background-color: #fdfdfd;
+    max-height: 520px;
+    overflow-y: auto;
+    border-top: 1px solid var(--slds-color-neutral-border);
+}
+.details-empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--slds-color-text-secondary);
+}
+.details-empty-icon {
+    font-size: 3em;
+    display: block;
+    margin-bottom: 12px;
+}
+.details-empty-state h3 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--slds-color-text-main);
+    margin-bottom: 6px;
+}
+.details-empty-state p {
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+/* Salesforce Record Fields Layout */
+.record-header-detail {
+    border-bottom: 1px solid var(--slds-color-neutral-border);
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+}
+.record-header-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--slds-color-text-main);
+}
+.record-header-subtitle {
+    font-size: 11px;
+    color: var(--slds-color-text-secondary);
+    margin-top: 2px;
+}
+
+.record-section {
+    margin-bottom: 16px;
+    border: 1px solid var(--slds-color-neutral-border);
+    border-radius: var(--slds-border-radius);
+    background-color: #ffffff;
+    overflow: hidden;
+}
+.record-section-title {
+    background-color: #fafaf9;
+    padding: 6px 12px;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--slds-color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--slds-color-neutral-border);
+}
+.record-section-body {
+    padding: 12px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+.record-field {
+    display: flex;
+    flex-direction: column;
+}
+.field-label {
+    font-size: 9px;
+    color: var(--slds-color-text-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+}
+.field-value {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--slds-color-text-main);
+}
+.field-value.highlight-good {
+    color: var(--slds-color-success);
+}
+.field-value.highlight-bad {
+    color: var(--slds-color-error);
+}
+
+/* Einstein Next Best Action (Recommendation card) */
+.einstein-rec-card {
+    border: 1px solid #c8e1fa;
+    border-radius: var(--slds-border-radius);
+    background: linear-gradient(135deg, #f0f7ff 0%, #e1efff 100%);
+    overflow: hidden;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 4px rgba(1, 118, 211, 0.05);
+}
+.einstein-header {
+    background-color: #0176d3;
+    color: #ffffff;
+    padding: 6px 12px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.einstein-icon {
+    font-size: 13px;
+}
+.einstein-body {
+    padding: 12px;
+}
+.einstein-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #0c437a;
+    margin-bottom: 6px;
+}
+.einstein-text {
+    font-size: 11px;
+    color: #335980;
+    line-height: 1.4;
+    margin-bottom: 10px;
+}
+.einstein-impact {
+    background-color: #ffffff;
+    border: 1px solid #bfdbfe;
+    border-radius: 4px;
+    padding: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.einstein-impact-label {
+    font-size: 9px;
+    font-weight: 700;
+    color: #4b5563;
+    text-transform: uppercase;
+}
+.einstein-impact-val {
+    font-size: 12px;
+    font-weight: bold;
+}
+.einstein-impact-val.upsell {
+    color: var(--slds-color-success);
+}
+.einstein-impact-val.downgrade {
+    color: var(--slds-color-error);
+}
+.einstein-btn {
+    width: 100%;
+    height: 28px;
+    font-size: 11px;
+    background-color: #0176d3;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: background-color 0.15s;
+}
+.einstein-btn:hover {
+    background-color: #014486;
+}
+
+/* ==========================================
+ * Salesforce Lightning Cards (Layout Panels)
+ * ========================================== */
+.lightning-card {
+    background-color: var(--slds-color-card-background);
+    border: 1px solid var(--slds-color-neutral-border);
+    border-radius: var(--slds-border-radius);
+    box-shadow: var(--slds-shadow-card);
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 16px;
+    overflow: hidden;
+}
+
+.lightning-card__header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--slds-color-neutral-border);
+    background-color: #fafaf9; /* Extremely light grey for header block */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    user-select: none;
+}
+
+.lightning-card__header-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.lightning-card__header-icon {
+    font-size: 16px;
+    color: var(--slds-color-brand);
+}
+
+.lightning-card__header h2 {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--slds-color-text-main);
+}
+
+.lightning-card__body {
+    padding: 16px;
+    flex: 1;
+}
+.lightning-card__body.no-padding {
+    padding: 0;
+}
+
+/* ==========================================
+ * Salesforce lightning-datatable
+ * ========================================== */
+.table-container {
+    overflow-x: auto;
+    overflow-y: auto;
+    border-radius: 4px;
+    border: 1px solid var(--slds-color-neutral-border);
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.data-table thead {
+    background-color: #fafaf9;
+    color: var(--slds-color-text-secondary);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: 2px solid var(--slds-color-neutral-border);
+}
+
+.data-table th {
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    border-bottom: 2px solid var(--slds-color-neutral-border);
+    user-select: none;
+}
+
+.data-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--slds-color-neutral-border);
+    color: var(--slds-color-text-main);
+}
+
+.data-table tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+.data-table tbody tr:hover {
+    background-color: #f3f3f2;
+}
+
+.data-table tbody tr:nth-child(even) {
+    background-color: #fcfcfc;
+}
+
+/* Color codes */
+.value-positive {
+    color: var(--slds-color-success);
+    font-weight: 600;
+}
+
+.value-negative {
+    color: var(--slds-color-error);
+    font-weight: 600;
+}
+
+.value-neutral {
+    color: var(--slds-color-text-secondary);
+}
+
+/* ==========================================
+ * Salesforce pill-like badges (slds-badge)
+ * ========================================== */
+.slds-badge-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    line-height: 1;
+}
+
+.slds-badge-pill.bronze {
+    background-color: var(--tier-bronze-bg);
+    color: var(--tier-bronze-text);
+}
+
+.slds-badge-pill.silver {
+    background-color: var(--tier-silver-bg);
+    color: var(--tier-silver-text);
+}
+
+.slds-badge-pill.gold {
+    background-color: var(--tier-gold-bg);
+    color: var(--tier-gold-text);
+}
+
+/* ==========================================
+ * Salesforce Lightning Modal (Loading Dialog)
+ * ========================================== */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(8, 7, 7, 0.6); /* Semi-transparent background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9000;
+}
+
+.modal-content {
+    background: var(--slds-color-card-background);
+    padding: 30px;
+    border-radius: var(--slds-border-radius);
+    text-align: center;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.2);
+    max-width: 320px;
+    border: 1px solid var(--slds-color-neutral-border);
+}
+
+.modal-content h2 {
+    font-size: 1.3em;
+    font-weight: 700;
+    color: var(--slds-color-text-main);
+    margin-bottom: 10px;
+}
+
+.modal-content p {
+    color: var(--slds-color-text-secondary);
+    margin-bottom: 20px;
+    font-size: 12px;
+}
+
+.modal .spinner {
+    margin: 0 auto;
+    width: 32px;
+    height: 32px;
+    border-width: 4px;
+}
+
+/* ==========================================
+ * Tier Migrations / Campaign Workspace (Tab 3)
+ * ========================================== */
+.tier-migration-wrapper {
+    background-color: var(--slds-color-card-background);
+    padding: 24px;
+    border: 1px solid var(--slds-color-neutral-border);
+    border-radius: var(--slds-border-radius);
+    box-shadow: var(--slds-shadow-card);
+}
+
+.campaign-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid var(--slds-color-neutral-border);
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.tier-migration-wrapper h2 {
+    font-size: 1.45em;
+    font-weight: 700;
+    color: var(--slds-color-text-main);
+}
+
+.section-subtitle {
+    color: var(--slds-color-text-secondary);
+    margin-top: 2px;
+    font-size: 12px;
+}
+
+.migration-filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* Salesforce lightning-tab alternative */
+.filter-btn {
+    padding: 6px 16px;
+    border: 1px solid var(--slds-color-neutral-border);
+    background: #ffffff;
+    border-radius: var(--slds-border-radius);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 11px;
+    color: var(--slds-color-text-secondary);
+    transition: all 0.15s ease;
+    height: 30px;
+    user-select: none;
+}
+
+.filter-btn:hover {
+    border-color: var(--slds-color-brand);
+    color: var(--slds-color-brand);
+}
+
+.filter-btn.active {
+    background-color: var(--slds-color-brand);
+    border-color: var(--slds-color-brand);
+    color: #ffffff;
+}
+
+.migration-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 16px;
+}
+
+/* Salesforce Case Card style */
+.migration-card {
+    border: 1px solid var(--slds-color-neutral-border);
+    border-radius: var(--slds-border-radius);
+    padding: 16px;
+    transition: box-shadow 0.15s ease;
+    background-color: #ffffff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.migration-card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+}
+
+.migration-card.upsell {
+    border-top: 4px solid var(--slds-color-success);
+}
+
+.migration-card.downgrade {
+    border-top: 4px solid var(--slds-color-warning);
+}
+
+.migration-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.migration-customer-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--slds-color-text-main);
+}
+
+.migration-customer-id {
+    font-size: 11px;
+    color: var(--slds-color-text-secondary);
+    margin-top: 1px;
+}
+
+.migration-badge {
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-size: 9px;
+    font-weight: 700;
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.migration-badge.upsell {
+    background-color: #d8f3e5;
+    color: var(--slds-color-success);
+}
+
+.migration-badge.downgrade {
+    background-color: #fff1e6;
+    color: var(--slds-color-warning);
+}
+
+.migration-tiers {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 12px 0;
+    padding: 10px 12px;
+    background-color: #fafaf9;
+    border: 1px solid var(--slds-color-neutral-border);
+    border-radius: 4px;
+}
+
+.tier-badge {
+    padding: 6px 12px;
+    border-radius: 3px;
+    font-weight: 700;
+    text-align: center;
+    flex: 1;
+    font-size: 10px;
+    text-transform: uppercase;
+}
+
+.tier-badge.bronze {
+    background-color: var(--tier-bronze-bg);
+    color: var(--tier-bronze-text);
+}
+
+.tier-badge.silver {
+    background-color: var(--tier-silver-bg);
+    color: var(--tier-silver-text);
+}
+
+.tier-badge.gold {
+    background-color: var(--tier-gold-bg);
+    color: var(--tier-gold-text);
+}
+
+.tier-arrow {
+    font-size: 14px;
+    color: var(--slds-color-text-secondary);
+    font-weight: bold;
+}
+
+.migration-reason {
+    margin-top: 12px;
+    padding: 10px 12px;
+    background-color: #ffffff;
+    border: 1px solid var(--slds-color-neutral-border);
+    border-radius: 4px;
+    border-left: 3px solid var(--slds-color-brand);
+}
+
+.migration-reason-label {
+    font-size: 9px;
+    color: var(--slds-color-text-secondary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.migration-reason-text {
+    color: var(--slds-color-text-main);
+    font-size: 11px;
+    line-height: 1.4;
+}
+
+.migration-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.migration-stat {
+    padding: 8px;
+    background-color: #fafaf9;
+    border: 1px solid var(--slds-color-neutral-border);
+    border-radius: 4px;
+    text-align: center;
+}
+
+.migration-stat-value {
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.migration-stat-label {
+    font-size: 9px;
+    color: var(--slds-color-text-secondary);
+    margin-top: 2px;
+}
+
+.migration-action {
+    margin-top: 12px;
+    padding: 8px;
+    background-color: #ffffff;
+    border: 1px dashed var(--slds-color-brand);
+    border-radius: 4px;
+    color: var(--slds-color-brand);
+    font-weight: 700;
+    text-align: center;
+    font-size: 11px;
+    cursor: pointer;
+    transition: background-color 0.15s;
+    user-select: none;
+}
+
+.migration-action:hover {
+    background-color: rgba(1, 118, 211, 0.05);
+}
+
+.no-migrations {
+    text-align: center;
+    padding: 60px 15px;
+    color: var(--slds-color-text-secondary);
+    width: 100%;
+}
+
+.no-migrations-icon {
+    font-size: 3em;
+    margin-bottom: 12px;
+}
+
+/* ==========================================
+ * Model Performance Tab Details (Tab 4)
+ * ========================================== */
+.performance-layout {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 16px;
+}
+.model-params-table {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--slds-color-neutral-border);
+    border-radius: var(--slds-border-radius);
+    background-color: #ffffff;
+    margin-bottom: 16px;
+    overflow: hidden;
+}
+.param-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--slds-color-neutral-border);
+    font-size: 12px;
+}
+.param-row:last-child {
+    border-bottom: none;
+}
+.param-label {
+    color: var(--slds-color-text-secondary);
+    font-weight: 600;
+}
+.param-value {
+    font-weight: 700;
+    color: var(--slds-color-text-main);
+    text-align: right;
+}
+.code-text {
+    font-family: Consolas, Monaco, monospace;
+    font-size: 11px;
+    background-color: #f3f3f2;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-weight: normal;
+}
+.feature-importance-section {
+    padding-top: 8px;
+}
+.feature-importance-section h3 {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--slds-color-text-main);
+}
+.feature-intro {
+    font-size: 12px;
+    color: var(--slds-color-text-secondary);
+    margin-bottom: 12px;
+    line-height: 1.4;
+}
+.features-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.features-list li {
+    padding: 8px 12px;
+    border-left: 3px solid var(--slds-color-brand);
+    background-color: #ffffff;
+    border-top: 1px solid #f3f3f2;
+    border-right: 1px solid #f3f3f2;
+    border-bottom: 1px solid #f3f3f2;
+    border-radius: 0 4px 4px 0;
+    font-size: 11px;
+    line-height: 1.4;
+}
+.features-list li strong {
+    font-family: Consolas, Monaco, monospace;
+    color: var(--slds-color-text-main);
+    font-size: 12px;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f3f3f2;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c9c7c5;
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #b0adab;
+}
+
+@media (max-width: 992px) {
+    .dashboard-charts-layout,
+    .accounts-split-layout,
+    .performance-layout {
+        grid-template-columns: 1fr;
+    }
+    .accounts-split-layout .table-card {
+        border-right: none;
+        border-bottom: 1px solid var(--slds-color-neutral-border);
+    }
+    .slds-list-controls {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+/* ==========================================
+ * New Enhancements (Churn, Simulators, CRM Sync)
+ * ========================================== */
+
+/* Churn Risk Stats Card styling */
+.stat-card-risk {
+    border-left: 4px solid var(--slds-color-error);
+    padding-left: 12px !important;
+}
+.stat-card-upsell {
+    border-left: 4px solid var(--slds-color-success);
+    padding-left: 12px !important;
+}
+
+/* Threshold Sliders Panel styling */
+.threshold-sliders-layout {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 24px;
+}
+.slider-group {
+    flex: 1 1 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.slider-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--slds-color-text-secondary);
+}
+.slider-label strong {
+    color: var(--slds-color-brand);
+    font-size: 13px;
+}
+.styled-slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: #e0e0e0;
+    outline: none;
+    transition: background 0.15s;
+}
+.styled-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--slds-color-brand);
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    transition: transform 0.1s;
+}
+.styled-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.25);
+}
+.preset-buttons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1 1 100%;
+    margin-top: 10px;
+    border-top: 1px solid var(--slds-color-neutral-border);
+    padding-top: 10px;
+}
+.presets-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--slds-color-text-secondary);
+    margin-right: 8px;
+}
+.btn-xs {
+    height: 24px;
+    padding: 2px 10px;
+    font-size: 10px;
+}
+
+/* Churn Risk Badge inside Table */
+.risk-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 700;
+}
+.risk-badge.high {
+    background-color: #ffe4e6;
+    color: #b91c1c;
+}
+.risk-badge.medium {
+    background-color: #fef3c7;
+    color: #d97706;
+}
+.risk-badge.low {
+    background-color: #d1fae5;
+    color: #047857;
+}
+
+/* Bulk Action Bar inside Table view */
+.bulk-action-bar {
+    background-color: #f0f8ff;
+    border: 1px solid #c8e1fa;
+    border-bottom: none;
+    padding: 10px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    animation: slideDown 0.2s ease-out;
+    border-radius: 0;
+}
+@keyframes slideDown {
+    from { transform: translateY(-10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+.bulk-action-buttons {
+    display: flex;
+    gap: 8px;
+}
+#bulkActionText {
+    font-size: 12px;
+    font-weight: 600;
+    color: #0c437a;
+    display: inline-flex;
+    align-items: center;
+}
+
+/* Tab 3 Split Layout */
+.campaigns-split-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+    gap: 16px;
+}
+.crm-sync-card {
+    background-color: var(--slds-color-card-background);
+}
+.sync-dashboard {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+.sync-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 15px;
+}
+.sync-kpi-card {
+    background-color: #fafaf9;
+    border: 1px solid var(--slds-color-neutral-border);
+    border-radius: 4px;
+    padding: 10px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.sync-kpi-label {
+    font-size: 9px;
+    color: var(--slds-color-text-secondary);
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+.sync-kpi-val {
+    font-size: 16px;
+    font-weight: bold;
+    color: var(--slds-color-text-main);
+}
+.status-badge {
+    font-size: 11px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 12px;
+}
+.status-badge.status-offline {
+    background-color: #e5e7eb;
+    color: #4b5563;
+}
+.status-badge.status-syncing {
+    background-color: #dbeafe;
+    color: #1d4ed8;
+    animation: pulse 1.5s infinite;
+}
+.status-badge.status-online {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
+
+.sync-history-log {
+    border: 1px solid var(--slds-color-neutral-border);
+    border-radius: 4px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 300px;
+    background-color: #fafaf9;
+}
+.log-title {
+    font-size: 11px;
+    font-weight: bold;
+    color: var(--slds-color-text-secondary);
+    background-color: #f3f3f2;
+    padding: 6px 12px;
+    border-bottom: 1px solid var(--slds-color-neutral-border);
+    text-transform: uppercase;
+}
+.log-entries {
+    padding: 10px;
+    overflow-y: auto;
+    font-family: Consolas, Monaco, monospace;
+    font-size: 11px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+}
+.log-entry {
+    padding: 4px 8px;
+    border-radius: 3px;
+    border-left: 3px solid var(--slds-color-brand);
+    background-color: #ffffff;
+    line-height: 1.4;
+}
+.log-entry.empty {
+    border-left: none;
+    color: #9ca3af;
+    text-align: center;
+    font-style: italic;
+    padding: 20px;
+}
+.log-entry.success {
+    border-left-color: var(--slds-color-success);
+    background-color: #f0fdf4;
+    color: #166534;
+}
+.log-entry.info {
+    border-left-color: var(--slds-color-info);
+    background-color: #eff6ff;
+    color: #1e40af;
+}
+
+/* Einstein Action Simulator in Details Panel */
+.simulator-panel {
+    border: 1px solid #d1fae5;
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    margin-bottom: 16px;
+}
+.simulator-header {
+    background-color: var(--slds-color-success);
+    color: #ffffff;
+    padding: 6px 12px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.simulator-body {
+    padding: 12px;
+}
+.simulator-slider-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 10px;
+}
+.simulator-slider-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 600;
+    color: #065f46;
+}
+.simulator-slider-label span:last-child {
+    font-family: Consolas, monospace;
+    font-weight: bold;
+}
+.simulator-slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    border-radius: 2px;
+    background: #a7f3d0;
+    outline: none;
+}
+.simulator-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--slds-color-success);
+    cursor: pointer;
+}
+.simulator-result-box {
+    background-color: #ffffff;
+    border: 1px solid #a7f3d0;
+    border-radius: 4px;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+}
+.simulator-result-label {
+    font-size: 10px;
+    font-weight: bold;
+    color: #374151;
+    text-transform: uppercase;
+}
+.simulator-result-values {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+.simulator-clv-val {
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--slds-color-success);
+}
+.simulator-lift-val {
+    font-size: 10px;
+    font-weight: bold;
+    color: var(--slds-color-success);
+}
+
+/* Churn Priority Badge */
+.priority-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: bold;
+}
+.priority-pill.immediate {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+.priority-pill.campaign {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+.priority-pill.maintain {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+/* ==========================================
+ * Action Center & CFO Overview Styles
+ * ========================================== */
+.action-center-panel {
+    background-color: var(--slds-color-card-background);
+    border: 1px solid var(--slds-color-neutral-border);
+    border-radius: var(--slds-border-radius);
+    padding: 16px;
+    box-shadow: var(--slds-shadow-card);
+    border-left: 4px solid var(--slds-color-error);
+    margin-bottom: 20px;
+}
+.action-center-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+.action-center-header h2 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--slds-color-text-main);
+}
+.action-center-body {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+}
+.action-center-kpi {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background-color: #fafaf9;
+    padding: 12px;
+    border-radius: var(--slds-border-radius);
+    border: 1px solid var(--slds-color-neutral-border);
+    cursor: pointer;
+    transition: background-color 0.15s, transform 0.1s;
+}
+.action-center-kpi:hover {
+    background-color: #f3f3f2;
+    transform: translateY(-1px);
+}
+.action-center-kpi strong {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--slds-color-text-main);
+    display: block;
+    line-height: 1.1;
+}
+.action-center-kpi .kpi-desc {
+    font-size: 11px;
+    color: var(--slds-color-text-secondary);
+}
+
+.dashboard-sub-tabs {
+    display: flex;
+    gap: 10px;
+    border-bottom: 1px solid var(--slds-color-neutral-border);
+    padding-bottom: 8px;
+    margin-bottom: 20px;
+}
+.sub-tab-btn {
+    background: none;
+    border: none;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--slds-color-text-secondary);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.15s ease;
+}
+.sub-tab-btn:hover {
+    color: var(--slds-color-brand);
+}
+.sub-tab-btn.active {
+    color: var(--slds-color-brand);
+    border-bottom-color: var(--slds-color-brand);
+}
+
+.cfo-intro-card {
+    background-color: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-left: 4px solid var(--slds-color-success);
+    padding: 12px 16px;
+    border-radius: var(--slds-border-radius);
+    margin-bottom: 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #166534;
+}
+
+.cfo-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+.cfo-stat-card {
+    background-color: var(--slds-color-card-background);
+    border: 1px solid var(--slds-color-neutral-border);
+    border-radius: var(--slds-border-radius);
+    padding: 16px;
+    box-shadow: var(--slds-shadow-card);
+    transition: transform 0.15s ease;
+}
+.cfo-stat-card:hover {
+    transform: translateY(-2px);
+}
+.cfo-stat-card .cfo-stat-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--slds-color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+}
+.cfo-stat-card .cfo-stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--slds-color-brand);
+    margin-bottom: 4px;
+}
+.cfo-stat-card .cfo-stat-subtitle {
+    font-size: 10px;
+    color: var(--slds-color-text-secondary);
+}
+
+.cfo-charts-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+.chart-container-cfo {
+    position: relative;
+    width: 100%;
+    height: 350px;
+}
+
