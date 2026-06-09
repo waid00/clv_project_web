@@ -96,44 +96,70 @@ Web Dashboard (What you see):
 - **Silver**: 467 customers (39%)
 - **Gold**: 191 customers (16%)
 
-**Important:** Current tiers are **NOT purely based on CLV**
-- Some Bronze customers spent $119K
-- Some Gold customers spent $0 (non-buyers)
-- Tiers are based on: tenure, engagement, loyalty program status
+**Important:** Current database tiers are **NOT purely based on CLV**
+- Some Bronze customers spent 119 000 Kč
+- Some Gold customers spent 0 Kč (non-buyers)
+- Tiers in Salesforce are historically based on a blend of tenure, regional factors, and loyalty program status.
 
 ### New System (Suggested Tier based on predicted CLV):
-Purely CLV-based thresholds:
-- **Bronze**: Predicted CLV < $5,000 (minimal spenders)
-- **Silver**: Predicted CLV $5,000-$25,000 (regular spenders)
-- **Gold**: Predicted CLV ≥ $25,000 (high-value customers)
+Tiers are assigned using predicted CLV in Kč (Czech Koruna):
+- **Bronze**: Predicted CLV < 5 000 Kč (minimal spenders / non-buyers)
+- **Silver**: Predicted CLV 5 000 Kč - 25 000 Kč (regular mid-market spenders)
+- **Gold**: Predicted CLV ≥ 25 000 Kč (high-value accounts)
 
-**Why these numbers?**
-- Based on percentile analysis of actual 2025 spending:
-  - 25th percentile of buyers: $4,938 → rounds to $5,000
-  - 75th percentile of buyers: $26,315 → rounds to $25,000
+**Threshold Rationale:**
+- Based on percentile analysis of actual 2025 customer spending:
+  - 25th percentile of active buyers: 4 938 Kč → rounded to 5 000 Kč threshold.
+  - 75th percentile of active buyers: 26 315 Kč → rounded to 25 000 Kč threshold.
+
+---
+
+## **Advanced RFM + CLV Segmentation**
+
+The dashboard divides the customer base into 5 intelligent cohorts based on predicted CLV, churn risk, purchase frequency, and recency:
+
+| Segment | Definition | Action Strategy |
+|---------|------------|-----------------|
+| **Champions** | Gold tier + Low Churn Risk + frequency > median (3.0) + recency < 180 days | Reward, offer exclusive previews, lock in loyalty |
+| **High-Value At-Risk** | Gold/Silver tier + High/Medium Churn Risk | Immediate win-back campaigns, high-touch support |
+| **Loyal Mid-Tier** | Silver/Bronze tier + Low Churn Risk + frequency ≥ 2 | Maintain relationship, target with regular campaigns |
+| **Dormant High-Potential** | Monetary total > median + recency > 180 days | Reactivate with incentives, survey reasons for inactivity |
+| **Growing New** | Spend trend 1-year > 20% + predicted CLV > 0 | Nurture growth, introduce to higher tiers early |
+
+---
+
+## **Churn Risk Classification**
+
+Customer churn probability is evaluated using an auxiliary XGBoost classifier based on behavioral inputs (email open rate, mobile app usage, login activity, and spend trend):
+* **Low Risk**: $P(\text{churn}) \le 35\%$
+* **Medium Risk**: $35\% < P(\text{churn}) \le 65\%$
+* **High Risk**: $P(\text{churn}) > 65\%$
 
 ---
 
 ## **What the Dashboard Shows**
 
 ### Actual CLV 2025 Column
-- Real revenue each customer generated in 2025
-- Range: $0 to $165,413
-- 639 customers spent $0 (didn't buy)
-- 561 customers had positive purchases
+- Real revenue each customer generated in 2025 (in Kč).
+- Range: 0 Kč to 165 413 Kč.
+- 639 customers spent 0 Kč (non-buyers).
+- 561 customers had positive purchases.
 
 ### Predicted CLV 2025 Column
-- Model's estimate of what they SHOULD have spent based on:
-  - Historical spending patterns (2022-2024)
-  - Behavioral engagement
-  - Recency, Frequency, Monetary
-  - Demographics
-- Used to suggest new loyalty tier
-- Compared to actual to measure prediction accuracy
+- Model's estimate of what they should spend based on historical spending (2022-2024), engagement, RFM, and demographics.
+- Suggests new loyalty tier and is compared to actual CLV to track Mean Absolute Error (MAE).
 
 ### Tier Match (✅ or ❌)
-- ✅ = Suggested tier = Actual tier (model agrees with current assignment)
-- ❌ = Suggested tier ≠ Actual tier (model suggests customer belongs in different tier)
+- ✅ = Suggested tier = Actual tier (model agrees with current assignment).
+- ❌ = Suggested tier ≠ Actual tier (model recommends upgrading or downgrading).
+
+### Segment Explorer Cards
+Each card displays:
+- **Accounts**: Customer count in this segment.
+- **Avg CLV**: Average predicted CLV.
+- **Share**: Database share (percentage of all 1,200 accounts).
+- **Top Accounts**: Clickable pills of the top 3 highest-value accounts. Clicking a pill switches tabs and auto-selects the customer.
+- **Filter Action**: Clicking "View X Accounts" filters the Account list view to only this segment.
 
 ---
 

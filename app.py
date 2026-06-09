@@ -668,13 +668,28 @@ def get_segments():
 
         for _, row in df.iterrows():
             account_id   = row.get("account_external_id", "")
-            tier         = row.get("suggested_tier", "Unknown") or "Unknown"
-            churn_risk   = row.get("churn_risk", "Unknown") or "Unknown"
-            frequency    = float(row.get("frequency", 0) or 0)
-            recency      = float(row.get("recency_days", 999) or 999)
-            monetary     = float(row.get("monetary_total", 0) or 0)
-            trend_1y     = float(row.get("spend_trend_1y", 0) or 0)
-            pred_clv     = float(row.get("clv_2025_predicted", 0) or 0)
+            account_id   = "" if pd.isna(account_id) else str(account_id)
+
+            tier         = row.get("suggested_tier", "Unknown")
+            tier         = "Unknown" if pd.isna(tier) else str(tier)
+
+            churn_risk   = row.get("churn_risk", "Unknown")
+            churn_risk   = "Unknown" if pd.isna(churn_risk) else str(churn_risk)
+
+            frequency    = row.get("frequency", 0)
+            frequency    = 0.0 if pd.isna(frequency) else float(frequency)
+
+            recency      = row.get("recency_days", 999)
+            recency      = 999.0 if pd.isna(recency) else float(recency)
+
+            monetary     = row.get("monetary_total", 0)
+            monetary     = 0.0 if pd.isna(monetary) else float(monetary)
+
+            trend_1y     = row.get("spend_trend_1y", 0)
+            trend_1y     = 0.0 if pd.isna(trend_1y) else float(trend_1y)
+
+            pred_clv     = row.get("clv_2025_predicted", 0)
+            pred_clv     = 0.0 if pd.isna(pred_clv) else float(pred_clv)
 
             record = {
                 "account_external_id": str(account_id),

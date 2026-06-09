@@ -1324,102 +1324,167 @@ body {
     padding: 0;
 }
 
-.segments-header {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin-bottom: 16px;
-}
-.segments-header-icon {
-    font-size: 28px;
-    flex-shrink: 0;
-}
-.segments-header h2 {
-    font-size: 17px;
-    font-weight: 700;
-    color: var(--sf-navy);
-    margin: 0 0 2px;
-}
-.segments-header p {
-    font-size: 12px;
-    color: var(--sf-muted);
-    margin: 0;
-}
-
 .segments-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 14px;
+    grid-template-columns: repeat(auto-fit, minmax(215px, 1fr));
+    gap: 16px;
 }
 
 .segment-card {
-    background: #fff;
-    border-radius: var(--r-sm);
-    border-left: 4px solid var(--sf-blue);
-    border-top: 1px solid var(--sf-border);
-    border-right: 1px solid var(--sf-border);
-    border-bottom: 1px solid var(--sf-border);
-    padding: 16px;
+    background: #ffffff;
+    border-radius: 4px;
+    border: 1px solid var(--sf-border);
+    padding: 18px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 14px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    transition: transform 0.2s ease-in-out,
+                box-shadow 0.2s ease-in-out,
+                border-color 0.2s ease-in-out;
+    position: relative;
+    overflow: hidden;
+}
+
+.segment-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    border-color: #b0adab; /* Salesforce mid-grey border hover */
 }
 
 .segment-card-header {
     display: flex;
     align-items: flex-start;
-    gap: 10px;
+    gap: 12px;
 }
-.segment-icon { font-size: 22px; flex-shrink: 0; }
-.segment-name { font-size: 13px; font-weight: 700; color: var(--sf-navy); margin-bottom: 2px; }
-.segment-desc { font-size: 10px; color: var(--sf-muted); line-height: 1.4; }
+
+.segment-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    background: #f3f2f1; /* neutral Salesforce grey */
+    border-radius: 50%;
+    color: #514f4d; /* Salesforce secondary text color */
+    border: 1px solid #dddbda;
+}
+
+.segment-name {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--sf-navy);
+    margin-bottom: 2px;
+    letter-spacing: -0.15px;
+}
+
+.segment-desc {
+    font-size: 10.5px;
+    color: var(--sf-muted);
+    line-height: 1.4;
+}
 
 .segment-stats {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
+    gap: 6px;
     text-align: center;
     background: #fafaf9;
-    border-radius: var(--r-sm);
-    padding: 10px 6px 8px;
+    border-radius: 4px;
+    padding: 10px 4px;
     border: 1px solid var(--sf-border);
 }
+
+.segment-stat {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
 .segment-stat-value {
-    font-size: 15px;
-    font-weight: 700;
+    font-size: 14.5px;
+    font-weight: 800;
     color: var(--sf-navy);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    letter-spacing: -0.25px;
 }
+
 .segment-stat-label {
     font-size: 9px;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: .5px;
+    letter-spacing: 0.5px;
     color: var(--sf-muted);
-    margin-top: 2px;
+    margin-top: 3px;
 }
 
 .segment-filter-btn {
     display: block;
     width: 100%;
-    padding: 6px 12px;
+    padding: 7px 12px;
     font-size: 11px;
     font-weight: 700;
     font-family: inherit;
     cursor: pointer;
-    background: transparent;
-    border: 1px solid var(--sf-blue);
-    border-radius: var(--r-sm);
-    color: var(--sf-blue);
+    background: #ffffff;
+    border: 1px solid #dddbda;
+    border-radius: 4px;
+    color: #0070d2; /* Standard Salesforce blue button label link */
     text-align: center;
-    transition: background var(--t-fast), color var(--t-fast);
-    letter-spacing: .3px;
+    transition: all 0.18s ease-in-out;
+    letter-spacing: 0.3px;
+    margin-top: auto;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
 }
+
 .segment-filter-btn:hover {
-    background: var(--sf-blue);
-    color: #fff;
+    background: #f3f2f1;
+    border-color: #cbd5e1;
+    color: #005fb2;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+/* Segment Card Top Accounts Preview */
+.segment-top-accounts {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 4px;
+}
+.top-accounts-title {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--sf-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.top-accounts-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.account-pill {
+    font-size: 10px;
+    font-weight: 700;
+    background: #ffffff;
+    border: 1px solid var(--sf-border);
+    padding: 3px 8px;
+    border-radius: 12px;
+    color: var(--sf-navy);
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+}
+.account-pill:hover {
+    border-color: #706e6b;
+    color: #0070d2;
+    background: #fafaf9;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
 }
 
 /* Segment filter banner (accounts tab) */

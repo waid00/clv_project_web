@@ -1019,7 +1019,7 @@ function createCharts() {
                         { x: Math.max(...actualClv), y: Math.max(...actualClv) }
                     ],
                     type: 'line',
-                    borderColor: 'rgba(234, 0, 30, 0.8)',
+                    borderColor: 'rgba(3, 20, 50, 0.65)',
                     borderWidth: 2,
                     borderDash: [4, 4],
                     fill: false,
@@ -1093,15 +1093,15 @@ function createCharts() {
                 {
                     label: 'Actual CLV',
                     data: actualBins,
-                    backgroundColor: 'rgba(92, 103, 242, 0.7)',
-                    borderColor: 'rgba(92, 103, 242, 1)',
+                    backgroundColor: 'rgba(90, 168, 250, 0.65)',
+                    borderColor: 'rgba(90, 168, 250, 1)',
                     borderWidth: 1
                 },
                 {
                     label: 'Predicted CLV',
                     data: predictedBins,
-                    backgroundColor: 'rgba(227, 18, 120, 0.7)',
-                    borderColor: 'rgba(227, 18, 120, 1)',
+                    backgroundColor: 'rgba(1, 118, 211, 0.7)',
+                    borderColor: 'rgba(1, 118, 211, 1)',
                     borderWidth: 1
                 }
             ]
@@ -1159,8 +1159,8 @@ function createCharts() {
                 {
                     label: 'Prediction Errors',
                     data: errorBins,
-                    backgroundColor: 'rgba(46, 132, 74, 0.75)',
-                    borderColor: 'rgba(46, 132, 74, 1)',
+                    backgroundColor: 'rgba(1, 118, 211, 0.7)',
+                    borderColor: 'rgba(1, 118, 211, 1)',
                     borderWidth: 1
                 }
             ]
@@ -1210,8 +1210,28 @@ function createCharts() {
                 datasets: [{
                     label: 'Mean Absolute SHAP Value',
                     data: SHAPvalues,
-                    backgroundColor: 'rgba(1, 118, 211, 0.75)',
-                    borderColor: 'rgba(1, 118, 211, 1)',
+                    backgroundColor: [
+                        'rgba(3, 20, 50, 0.85)',
+                        'rgba(10, 40, 95, 0.85)',
+                        'rgba(10, 50, 120, 0.8)',
+                        'rgba(1, 85, 175, 0.8)',
+                        'rgba(1, 118, 211, 0.75)',
+                        'rgba(30, 145, 235, 0.75)',
+                        'rgba(90, 168, 250, 0.7)',
+                        'rgba(140, 195, 255, 0.7)',
+                        'rgba(190, 220, 255, 0.65)'
+                    ],
+                    borderColor: [
+                        'rgba(3, 20, 50, 1)',
+                        'rgba(10, 40, 95, 1)',
+                        'rgba(10, 50, 120, 1)',
+                        'rgba(1, 85, 175, 1)',
+                        'rgba(1, 118, 211, 1)',
+                        'rgba(30, 145, 235, 1)',
+                        'rgba(90, 168, 250, 1)',
+                        'rgba(140, 195, 255, 1)',
+                        'rgba(190, 220, 255, 1)'
+                    ],
                     borderWidth: 1
                 }]
             },
@@ -1262,16 +1282,16 @@ function createCharts() {
                     label: 'Customers',
                     data: [churnHigh, churnMedium, churnLow, churnUnknown],
                     backgroundColor: [
-                        'rgba(234, 0, 30, 0.75)',   // High Risk (Red)
-                        'rgba(243, 191, 0, 0.75)',  // Medium Risk (Orange/Yellow)
-                        'rgba(46, 132, 74, 0.75)',  // Low Risk (Green)
-                        'rgba(112, 110, 107, 0.75)' // Unknown (Gray)
+                        'rgba(3, 20, 50, 0.8)',      // High Risk (Deep Navy)
+                        'rgba(1, 118, 211, 0.75)',   // Medium Risk (Salesforce Blue)
+                        'rgba(90, 168, 250, 0.65)',  // Low Risk (Light Blue)
+                        'rgba(190, 220, 255, 0.5)'   // Unclassified (Extremely Light Blue)
                     ],
                     borderColor: [
-                        'rgba(234, 0, 30, 1)',
-                        'rgba(243, 191, 0, 1)',
-                        'rgba(46, 132, 74, 1)',
-                        'rgba(112, 110, 107, 1)'
+                        'rgba(3, 20, 50, 1)',
+                        'rgba(1, 118, 211, 1)',
+                        'rgba(90, 168, 250, 1)',
+                        'rgba(190, 220, 255, 0.8)'
                     ],
                     borderWidth: 1
                 }]
@@ -1321,14 +1341,14 @@ function createCharts() {
                     label: 'Customers',
                     data: [tierGold, tierSilver, tierBronze],
                     backgroundColor: [
-                        'rgba(212, 175, 55, 0.75)',  // Gold
-                        'rgba(192, 192, 192, 0.75)', // Silver
-                        'rgba(205, 127, 50, 0.75)'   // Bronze
+                        'rgba(3, 20, 50, 0.8)',      // Gold (Deep Navy)
+                        'rgba(1, 118, 211, 0.75)',   // Silver (Salesforce Blue)
+                        'rgba(90, 168, 250, 0.65)'   // Bronze (Light Blue)
                     ],
                     borderColor: [
-                        'rgba(212, 175, 55, 1)',
-                        'rgba(192, 192, 192, 1)',
-                        'rgba(205, 127, 50, 1)'
+                        'rgba(3, 20, 50, 1)',
+                        'rgba(1, 118, 211, 1)',
+                        'rgba(90, 168, 250, 1)'
                     ],
                     borderWidth: 1
                 }]
@@ -1374,18 +1394,18 @@ function createCharts() {
                     label: 'Portfolio Value (Kč)',
                     data: dataValues,
                     backgroundColor: [
-                        'rgba(1, 116, 211, 0.6)',
-                        'rgba(1, 116, 211, 0.6)',
-                        'rgba(1, 116, 211, 0.6)',
-                        'rgba(46, 132, 74, 0.75)',
-                        'rgba(92, 103, 242, 0.75)'
+                        'rgba(190, 220, 255, 0.5)',  // 2022 (Extremely Light Blue)
+                        'rgba(140, 195, 255, 0.6)',  // 2023 (Soft Light Blue)
+                        'rgba(90, 168, 250, 0.65)',  // 2024 (Light Blue)
+                        'rgba(1, 118, 211, 0.75)',   // 2025 Actual (Salesforce Blue)
+                        'rgba(3, 20, 50, 0.8)'       // 2025 Predicted (Deep Navy)
                     ],
                     borderColor: [
-                        'rgba(1, 116, 211, 1)',
-                        'rgba(1, 116, 211, 1)',
-                        'rgba(1, 116, 211, 1)',
-                        'rgba(46, 132, 74, 1)',
-                        'rgba(92, 103, 242, 1)'
+                        'rgba(190, 220, 255, 0.8)',
+                        'rgba(140, 195, 255, 1)',
+                        'rgba(90, 168, 250, 1)',
+                        'rgba(1, 118, 211, 1)',
+                        'rgba(3, 20, 50, 1)'
                     ],
                     borderWidth: 1.5
                 }]
@@ -1428,8 +1448,8 @@ function createCharts() {
                 datasets: [{
                     label: 'Avg Predicted CLV (Kč)',
                     data: cohortValues,
-                    backgroundColor: 'rgba(92, 103, 242, 0.7)',
-                    borderColor: 'rgba(92, 103, 242, 1)',
+                    backgroundColor: 'rgba(1, 118, 211, 0.75)',
+                    borderColor: 'rgba(1, 118, 211, 1)',
                     borderWidth: 1.5
                 }]
             },
@@ -2216,40 +2236,72 @@ async function loadSegments() {
 
         const defs = [
             {
-                key: 'champions', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#c8992a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.45 1-1 1H4v2h16v-2h-5c-.55 0-1-.45-1-1v-2.34"></path><path d="M12 2a6 6 0 0 1 6 6v5a6 6 0 0 1-6 6 6 6 0 0 1-6-6V8a6 6 0 0 1 6-6z"></path></svg>`, name: 'Champions',
+                key: 'champions', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.45 1-1 1H4v2h16v-2h-5c-.55 0-1-.45-1-1v-2.34"></path><path d="M12 2a6 6 0 0 1 6 6v5a6 6 0 0 1-6 6 6 6 0 0 1-6-6V8a6 6 0 0 1 6-6z"></path></svg>`, name: 'Champions',
                 desc: 'Gold-tier, low churn, high frequency, recently active',
-                color: '#c8992a', bg: '#fffbeb',
+                color: '#4b5563', bg: '#f9fafb',
             },
             {
-                key: 'high_value_at_risk', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#ba0517" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`, name: 'High-Value At-Risk',
+                key: 'high_value_at_risk', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`, name: 'High-Value At-Risk',
                 desc: 'High/Silver CLV customers with elevated churn risk',
-                color: '#ba0517', bg: '#fff0f0',
+                color: '#4b5563', bg: '#f9fafb',
             },
             {
-                key: 'loyal_mid_tier', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#0176d3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>`, name: 'Loyal Mid-Tier',
+                key: 'loyal_mid_tier', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>`, name: 'Loyal Mid-Tier',
                 desc: 'Consistent Silver/Bronze customers, low churn risk',
-                color: '#0176d3', bg: '#eef4fd',
+                color: '#4b5563', bg: '#f9fafb',
             },
             {
-                key: 'dormant_high_potential', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#9e540a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`, name: 'Dormant High-Potential',
+                key: 'dormant_high_potential', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`, name: 'Dormant High-Potential',
                 desc: 'High historical spend, inactive 6+ months — re-engage priority',
-                color: '#9e540a', bg: '#fef6ee',
+                color: '#4b5563', bg: '#f9fafb',
             },
             {
-                key: 'growing_new', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#1b7b4b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>`, name: 'Growing New',
+                key: 'growing_new', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>`, name: 'Growing New',
                 desc: 'Strong positive spend trend — future high-value accounts',
-                color: '#1b7b4b', bg: '#f0fdf5',
+                color: '#4b5563', bg: '#f9fafb',
             },
         ];
 
+        const totalCount = accountsData.length || 1200;
         grid.innerHTML = '';
         defs.forEach(def => {
             const seg = segments[def.key] || { count: 0, avg_clv: 0, total_clv: 0, members: [] };
             const memberIds = JSON.stringify((seg.members || []).map(m => m.account_external_id));
 
+            // Share of customer base calculation
+            const sharePct = totalCount > 0 ? ((seg.count / totalCount) * 100).toFixed(1) + '%' : '0.0%';
+
+            // Sort and grab top 3 accounts by CLV in this segment
+            const topMembers = (seg.members || [])
+                .sort((a, b) => b.predicted_clv - a.predicted_clv)
+                .slice(0, 3);
+
+            let topAccountsHtml = '';
+            if (topMembers.length > 0) {
+                topAccountsHtml = `
+                    <div class="segment-top-accounts">
+                        <span class="top-accounts-title">Top Accounts:</span>
+                        <div class="top-accounts-pills">
+                            ${topMembers.map(m => `
+                                <span class="account-pill" onclick="event.stopPropagation(); inspectAccount('${m.account_external_id}')" title="Predicted CLV: ${formatCurrency(m.predicted_clv)}">
+                                    ${m.account_external_id}
+                                </span>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            } else {
+                topAccountsHtml = `
+                    <div class="segment-top-accounts">
+                        <span class="top-accounts-title" style="color: var(--sf-muted);">No accounts</span>
+                    </div>
+                `;
+            }
+
             const card = document.createElement('div');
             card.className = 'segment-card';
-            card.style.cssText = `background: #ffffff; border: 1px solid var(--sf-border);`;
+            card.style.setProperty('--seg-color', def.color);
+            card.style.setProperty('--seg-bg', def.bg);
             card.innerHTML = `
                 <div class="segment-card-header">
                     <span class="segment-icon">${def.icon}</span>
@@ -2260,7 +2312,7 @@ async function loadSegments() {
                 </div>
                 <div class="segment-stats">
                     <div class="segment-stat">
-                        <div class="segment-stat-value" style="color:${def.color}">${seg.count}</div>
+                        <div class="segment-stat-value" style="color: var(--seg-color);">${seg.count}</div>
                         <div class="segment-stat-label">Accounts</div>
                     </div>
                     <div class="segment-stat">
@@ -2268,12 +2320,12 @@ async function loadSegments() {
                         <div class="segment-stat-label">Avg CLV</div>
                     </div>
                     <div class="segment-stat">
-                        <div class="segment-stat-value">${formatCurrency(seg.total_clv)}</div>
-                        <div class="segment-stat-label">Portfolio Value</div>
+                        <div class="segment-stat-value">${sharePct}</div>
+                        <div class="segment-stat-label">Share</div>
                     </div>
                 </div>
-                <button class="segment-filter-btn" style="border-color:${def.color}; color:${def.color};" 
-                    data-ids='${memberIds}' data-name="${def.name}">
+                ${topAccountsHtml}
+                <button class="segment-filter-btn" data-ids='${memberIds}' data-name="${def.name}">
                     View ${seg.count} Account${seg.count !== 1 ? 's' : ''} →
                 </button>
             `;
@@ -2292,6 +2344,43 @@ async function loadSegments() {
     } catch(e) {
         console.error('loadSegments error:', e);
     }
+}
+
+function inspectAccount(accountId) {
+    if (!accountsData || accountsData.length === 0) return;
+    const account = accountsData.find(a => a.account_external_id === accountId);
+    if (!account) return;
+
+    // Switch view tab
+    switchTab('accounts');
+
+    // Reset filters
+    const searchInput = document.getElementById('listSearchInput');
+    if (searchInput) searchInput.value = accountId;
+
+    document.getElementById('regionFilter').value = 'all';
+    document.getElementById('tierFilter').value = 'all';
+    document.getElementById('matchFilter').value = 'all';
+    document.getElementById('churnFilter').value = 'all';
+    document.getElementById('priorityFilter').value = 'all';
+
+    segmentFilterIds = null;
+    segmentFilterName = '';
+    const banner = document.getElementById('segmentFilterBanner');
+    if (banner) banner.style.display = 'none';
+
+    // Redraw table
+    applyFilters();
+
+    // Programmatically select row
+    setTimeout(() => {
+        const tbody = document.querySelector('#accountsTable tbody');
+        if (!tbody) return;
+        const row = tbody.querySelector(`tr[data-id="${accountId}"]`);
+        if (row) {
+            row.click();
+        }
+    }, 150);
 }
 
 function filterBySegment(ids, name) {
