@@ -1,0 +1,673 @@
+\documentclass[11pt,a4paper]{article}
+
+% ─── Packages ────────────────────────────────────────────────────────────────
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{geometry}
+\geometry{margin=2.2cm, top=2.5cm, bottom=2.5cm}
+
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{parskip}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{tocloft}
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{mdframed}
+\usepackage{tikz}  % for diagram placeholders
+
+% ─── Colors ──────────────────────────────────────────────────────────────────
+\definecolor{sfblue}{RGB}{0, 112, 210}
+\definecolor{sfnavy}{RGB}{22, 50, 92}
+\definecolor{sfgray}{RGB}{112, 112, 112}
+\definecolor{sflightgray}{RGB}{243, 243, 243}
+\definecolor{sfgreen}{RGB}{45, 160, 75}
+\definecolor{sforange}{RGB}{255, 140, 0}
+\definecolor{sfred}{RGB}{194, 57, 52}
+
+% ─── Hyperlinks ───────────────────────────────────────────────────────────────
+\hypersetup{
+    colorlinks=true,
+    linkcolor=sfblue,
+    urlcolor=sfblue,
+    citecolor=sfnavy,
+    pdftitle={CLV Prediction Platform — Technical Report},
+    pdfauthor={CLV Project Team},
+}
+
+% ─── Section Formatting ───────────────────────────────────────────────────────
+\titleformat{\section}{\large\bfseries\color{sfnavy}}{{\thesection}}{0.8em}{}[\vspace{-4pt}\rule{\linewidth}{0.6pt}]
+\titleformat{\subsection}{\normalsize\bfseries\color{sfblue}}{\thesubsection}{0.6em}{}
+\titleformat{\subsubsection}{\normalsize\itshape\color{sfgray}}{\thesubsubsection}{0.5em}{}
+
+% ─── Header / Footer ──────────────────────────────────────────────────────────
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{sfgray} CLV Prediction Platform — Technical Report}
+\fancyhead[R]{\small\color{sfgray} \today}
+\fancyfoot[C]{\small\color{sfgray}\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+
+% ─── Code Listings ────────────────────────────────────────────────────────────
+\lstset{
+    basicstyle=\small\ttfamily,
+    backgroundcolor=\color{sflightgray},
+    frame=single,
+    rulecolor=\color{sfgray},
+    breaklines=true,
+    columns=flexible,
+    keepspaces=true,
+    showstringspaces=false,
+    keywordstyle=\color{sfblue}\bfseries,
+    commentstyle=\color{sfgray}\itshape,
+    stringstyle=\color{sfgreen},
+}
+
+% ─── Callout Box ──────────────────────────────────────────────────────────────
+\newmdenv[
+  topline=false, bottomline=false, rightline=false,
+  linewidth=3pt, linecolor=sfblue,
+  backgroundcolor=sflightgray,
+  innerleftmargin=8pt, innerrightmargin=8pt,
+  innertopmargin=6pt, innerbottommargin=6pt,
+]{callout}
+
+% ─── Placeholder command ──────────────────────────────────────────────────────
+\newcommand{\diagramplaceholder}[2]{%
+  \begin{center}
+    \begin{tikzpicture}
+      \fill[sflightgray] (0,0) rectangle (#1,#2);
+      \draw[sfgray, dashed, thick] (0,0) rectangle (#1,#2);
+      \node[align=center, text=sfgray] at ({#1/2},{#2/2})
+        {\textit{[Diagram placeholder]}};
+    \end{tikzpicture}
+  \end{center}
+}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\begin{document}
+
+% ─── Title Page ───────────────────────────────────────────────────────────────
+\begin{titlepage}
+  \centering
+  \vspace*{2cm}
+  {\color{sfnavy}\rule{\linewidth}{1.2pt}}\\[0.6em]
+  {\Huge\bfseries\color{sfnavy} CLV Prediction Platform}\\[0.4em]
+  {\Large\color{sfblue} Technical Report}\\[0.3em]
+  {\color{sfnavy}\rule{\linewidth}{1.2pt}}\\[1.2em]
+  {\large Customer Lifetime Value \& Churn Analytics}\\[0.2em]
+  {\large Salesforce CRM-Integrated Web Dashboard}\\[2cm]
+  \begin{tabular}{rl}
+    \textbf{Version:}   & 1.0 \\[3pt]
+    \textbf{Date:}      & \today \\[3pt]
+    \textbf{Status:}    & Final Draft \\[3pt]
+    \textbf{Scope:}     & 1{,}200 Accounts · B2C Retail Portfolio \\[3pt]
+    \textbf{Currency:}  & Czech Koruna (Kč) \\
+  \end{tabular}
+  \vfill
+  {\small\color{sfgray} Confidential — Internal Use Only}
+\end{titlepage}
+
+% ─── Table of Contents ────────────────────────────────────────────────────────
+\tableofcontents
+\newpage
+
+% ═══════════════════════════════════════════════════════════════════════════════
+\section{Executive Summary}
+% ═══════════════════════════════════════════════════════════════════════════════
+
+This report documents the architecture, technology stack, data lineage, user testing
+outcomes, design trade-offs, and deployment recommendations for the
+\textbf{CLV Prediction Platform}—an end-to-end machine learning pipeline and
+interactive web dashboard built to support B2C retail customer relationship
+management.
+
+The system ingests historical Salesforce CRM data (2022--2024), engineers 29
+analytical features per account, trains an XGBoost regression model and an
+XGBoost churn classifier, and exposes predictions through a Flask REST API.
+A single-page application frontend renders the results in a Salesforce Lightning–
+inspired dashboard used by analysts, retention specialists, and executives.
+
+\begin{callout}
+\textbf{Key Metrics (Production Model, n = 1{,}200 accounts):}\\[4pt]
+\begin{tabular}{ll}
+  MAE (full portfolio):  & 8{,}172 Kč \\
+  MAE (active buyers):   & 13{,}888 Kč \\
+  R² (full portfolio):   & 0.521 \\
+  Churn Classifier AUC:  & 0.883 \\
+  Tier Accuracy:         & 48.3\% (current CRM tiers vs.\ model-suggested) \\
+  Revenue at Risk:       & 26{,}084 Kč \\
+  Upsell Value Potential:& 3{,}765{,}144 Kč \\
+\end{tabular}
+\end{callout}
+
+% ═══════════════════════════════════════════════════════════════════════════════
+\section{System Architecture}
+% ═══════════════════════════════════════════════════════════════════════════════
+
+\subsection{Architecture Overview}
+
+The platform follows a three-tier architecture: a \textbf{data processing} layer
+(Jupyter notebooks), a \textbf{backend serving} layer (Flask), and a
+\textbf{presentation} layer (single-page web application).
+
+\begin{figure}[H]
+  \caption{System Architecture Diagram — Placeholder}
+  \diagramplaceholder{14}{6}
+  \label{fig:architecture}
+\end{figure}
+
+\subsection{Component Description}
+
+\begin{description}[leftmargin=1.5cm, labelwidth=2.8cm]
+  \item[\textbf{Data Layer}]
+    Four raw CSV files exported from Salesforce CRM are consumed by
+    Jupyter notebooks (\texttt{krok\_01} through \texttt{krok\_08}).
+    Notebooks produce cleaned feature files (\texttt{step\_02\_features.csv})
+    and churn scores (\texttt{step\_08\_churn\_output.csv}) written to
+    \texttt{notebooks/outputs/}.
+
+  \item[\textbf{Model Layer}]
+    Serialised XGBoost models (\texttt{xgboost\_clv\_model.pkl},
+    \texttt{feature\_names.pkl}) are persisted in \texttt{models/}.
+    On first request, \texttt{app.py} trains the model in memory; subsequent
+    requests load from disk, reducing latency to milliseconds.
+
+  \item[\textbf{API Layer}]
+    A Flask application (\texttt{app.py}) exposes five REST endpoints
+    consumed by the frontend via \texttt{fetch()}.
+
+  \item[\textbf{Frontend Layer}]
+    A single HTML page (\texttt{templates/index.html}) with vanilla
+    JavaScript (\texttt{static/script.js}) and CSS (\texttt{static/style.css}).
+    Chart.js renders all eight analytical charts.
+\end{description}
+
+\subsection{API Endpoints}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{lp{3.5cm}p{6cm}}
+\toprule
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\midrule
+GET  & \texttt{/api/accounts}      & Full account list with features, churn probability, and CLV prediction \\
+POST & \texttt{/api/predict}        & Triggers model training or loading; runs predictions for all accounts \\
+POST & \texttt{/api/simulate}       & Co-pilot scenario simulation — overrides selected metrics and re-predicts \\
+GET  & \texttt{/api/explain/<id>}   & XAI endpoint — returns top-3 positive/negative CLV drivers for one account \\
+GET  & \texttt{/api/segments}       & Computes and returns 5 RFM-based micro-segment cohorts \\
+\bottomrule
+\end{tabular}
+\caption{REST API surface}
+\end{table}
+
+% ═══════════════════════════════════════════════════════════════════════════════
+\section{Technology Stack \& Data Lineage}
+% ═══════════════════════════════════════════════════════════════════════════════
+
+\subsection{Technology Stack}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{lll}
+\toprule
+\textbf{Layer} & \textbf{Technology} & \textbf{Version / Note} \\
+\midrule
+\multirow{6}{*}{Backend / ML} 
+  & Python           & 3.11+ \\
+  & Flask            & $\geq$ 2.3.0 \\
+  & Flask-CORS       & $\geq$ 4.0.0 \\
+  & XGBoost          & $\geq$ 1.7.0 \\
+  & scikit-learn     & $\geq$ 1.3.0 \\
+  & pandas / numpy   & $\geq$ 2.0.0 / 1.24.0 \\
+\midrule
+\multirow{3}{*}{Analysis}
+  & SHAP             & $\geq$ 0.42.0 \\
+  & matplotlib / seaborn & $\geq$ 3.7.0 / 0.12.0 \\
+  & scipy            & $\geq$ 1.11.0 \\
+\midrule
+\multirow{2}{*}{Persistence}
+  & joblib           & $\geq$ 1.3.0 \\
+  & openpyxl         & $\geq$ 3.1.0 \\
+\midrule
+\multirow{2}{*}{Frontend}
+  & Chart.js         & v4 (CDN) \\
+  & Vanilla JS / CSS & ES2020, CSS custom properties \\
+\midrule
+Deployment & gunicorn & Latest stable \\
+\bottomrule
+\end{tabular}
+\caption{Full technology stack}
+\end{table}
+
+\subsection{Data Lineage}
+
+\begin{figure}[H]
+  \caption{Data Lineage Diagram — Placeholder}
+  \diagramplaceholder{14}{7}
+  \label{fig:lineage}
+\end{figure}
+
+The data flows through the following stages:
+
+\begin{enumerate}[leftmargin=1.5cm]
+  \item \textbf{Raw Ingestion} — Four Salesforce CSV exports are placed in \texttt{csv/}:
+    \begin{itemize}[noitemsep]
+      \item \texttt{Account.csv} — 1{,}200 customer entities (demographics, tier, channel)
+      \item \texttt{Order\_\_c.csv} — $\sim$9{,}500 transaction records (2022--2024)
+      \item \texttt{Activity\_\_c.csv} — 1{,}200 digital engagement records
+      \item \texttt{Product2.csv} — 72 product catalogue records
+    \end{itemize}
+
+  \item \textbf{EDA \& Cleaning} (\texttt{krok\_01\_EDA.ipynb}) — Null handling,
+    outlier analysis, distribution checks; outputs \texttt{step\_01\_*.csv}.
+
+  \item \textbf{Feature Engineering} (\texttt{krok\_02\_feature\_engineering.ipynb}) —
+    RFM aggregation, spend trends, engagement normalisation, category diversity.
+    Output: \texttt{step\_02\_features.csv} (1{,}200 rows $\times$ 33 columns).
+
+  \item \textbf{Model Training}:
+    \begin{itemize}[noitemsep]
+      \item \texttt{krok\_03}: Linear Regression baseline (MAE 9{,}708 Kč, R² 0.418)
+      \item \texttt{krok\_04}: Logistic Regression — purchase-probability classifier (AUC 0.910)
+      \item \texttt{krok\_05}: Random Forest tuned (MAE 8{,}406 Kč, R² 0.477)
+      \item \texttt{krok\_06}: \textbf{XGBoost regressor — final model} (MAE 8{,}172 Kč, R² 0.521)
+      \item \texttt{krok\_07}: Customer segmentation logic
+      \item \texttt{krok\_08}: \textbf{XGBoost churn classifier} (AUC 0.883, F1 0.746)
+    \end{itemize}
+
+  \item \textbf{Runtime Serving} — \texttt{app.py} loads serialised models from
+    \texttt{models/}, merges live account data with pre-computed features, and
+    applies churn-adjusted CLV:
+    \[
+      \text{CLV}_{\text{adj}} = \hat{\text{CLV}} \times \bigl(1 - P(\text{churn})\bigr)
+    \]
+
+  \item \textbf{Downstream Export} — Users may export predictions as
+    \texttt{clv\_predictions\_export.csv} for re-import into Salesforce CRM.
+\end{enumerate}
+
+\subsection{Feature Set (29 predictive features)}
+
+\begin{table}[H]
+\centering\small
+\begin{tabular}{ll}
+\toprule
+\textbf{Category} & \textbf{Features} \\
+\midrule
+RFM            & recency\_days, frequency, monetary\_total, monetary\_avg \\
+Historical spend & spend\_2022, spend\_2023, spend\_2024 \\
+Spend trends   & spend\_trend\_2y, spend\_trend\_1y \\
+Digital engagement & login\_count\_30d, login\_count\_90d, email\_open\_rate, \\
+                   & app\_usage\_score, days\_since\_login \\
+Customer profile & age, tenure\_days, category\_diversity, \\
+                 & preferred channel (encoded), campaign subscription status \\
+\bottomrule
+\end{tabular}
+\caption{Feature groups used by the XGBoost CLV regressor}
+\end{table}
+
+% ═══════════════════════════════════════════════════════════════════════════════
+\section{Model Design}
+% ═══════════════════════════════════════════════════════════════════════════════
+
+\subsection{CLV Regressor — XGBoost}
+
+The primary model is an XGBoost gradient boosting regressor trained on
+80\% of the 1{,}200-account dataset and evaluated on the held-out 20\%.
+Key hyperparameters (found via GridSearch with 5-fold CV):
+
+\begin{lstlisting}[language=Python]
+XGBRegressor(
+    n_estimators   = 300,
+    max_depth       = 6,
+    learning_rate   = 0.05,
+    random_state    = 42,
+)
+\end{lstlisting}
+
+\begin{table}[H]
+\centering\small
+\begin{tabular}{lrrrr}
+\toprule
+\textbf{Model} & \textbf{MAE (Kč)} & \textbf{RMSE (Kč)} & \textbf{R²} & \textbf{MAE active} \\
+\midrule
+Linear Regression (baseline) & 9{,}708 & 17{,}101 & 0.418 & 15{,}185 \\
+Random Forest (tuned)        & 8{,}406 & 16{,}212 & 0.477 & 14{,}153 \\
+\textbf{XGBoost (tuned)}     & \textbf{8{,}172} & \textbf{15{,}512} & \textbf{0.521} & \textbf{13{,}888} \\
+\bottomrule
+\end{tabular}
+\caption{Regression model comparison (test set, 20\% holdout)}
+\end{table}
+
+\subsection{Churn Classifier — XGBoost}
+
+A binary churn classifier outputs $P(\text{churn}) \in [0,1]$ per account.
+Thresholds applied to the dashboard:
+
+\begin{center}
+  Low Risk: $P \leq 35\%$ \quad|\quad
+  Medium Risk: $35\% < P \leq 65\%$ \quad|\quad
+  High Risk: $P > 65\%$
+\end{center}
+
+\begin{table}[H]
+\centering\small
+\begin{tabular}{lrrrr}
+\toprule
+\textbf{Model} & \textbf{AUC} & \textbf{F1} & \textbf{Accuracy} & \textbf{Precision} \\
+\midrule
+Logistic Regression (baseline) & 0.853 & 0.725 & 77.4\% & 76.0\% \\
+\textbf{XGBoost (tuned)}       & \textbf{0.883} & \textbf{0.746} & \textbf{79.8\%} & \textbf{80.7\%} \\
+\bottomrule
+\end{tabular}
+\caption{Churn classifier comparison}
+\end{table}
+
+\subsection{Loyalty Tier Thresholds}
+
+Thresholds were set using percentile analysis of actual 2025 spending:
+
+\begin{center}
+  \textbf{Bronze}: $\hat{\text{CLV}} < 5{,}000$ Kč \quad
+  \textbf{Silver}: $5{,}000 \leq \hat{\text{CLV}} < 25{,}000$ Kč \quad
+  \textbf{Gold}: $\hat{\text{CLV}} \geq 25{,}000$ Kč
+\end{center}
+
+The 25th percentile of active buyers (4{,}938 Kč) was rounded to 5{,}000 Kč;
+the 75th percentile (26{,}315 Kč) was rounded to 25{,}000 Kč.
+
+% ═══════════════════════════════════════════════════════════════════════════════
+\section{Customer Segmentation}
+% ═══════════════════════════════════════════════════════════════════════════════
+
+Five RFM-based micro-segments are computed at runtime via \texttt{/api/segments}.
+Segments are non-mutually-exclusive priority cohorts evaluated in the order shown:
+
+\begin{table}[H]
+\centering\small
+\begin{tabular}{p{3.2cm}p{5.5cm}p{4cm}}
+\toprule
+\textbf{Segment} & \textbf{Definition} & \textbf{Recommended Action} \\
+\midrule
+Champions
+  & Gold tier · Low churn · frequency $>$ median (3.0) · recency $<$ 180 days
+  & Exclusive previews, loyalty lock-in \\
+\midrule
+High-Value At-Risk
+  & Gold/Silver tier · High or Medium churn risk
+  & Immediate win-back, high-touch support \\
+\midrule
+Loyal Mid-Tier
+  & Silver/Bronze tier · Low churn · frequency $\geq$ 2
+  & Regular campaigns, relationship maintenance \\
+\midrule
+Dormant High-Potential
+  & Monetary total $>$ median · recency $>$ 180 days
+  & Reactivation incentives, survey \\
+\midrule
+Growing New
+  & spend\_trend\_1y $>$ 20\% · predicted CLV $>$ 0
+  & Nurture, early tier introduction \\
+\bottomrule
+\end{tabular}
+\caption{Customer micro-segment definitions}
+\end{table}
+
+% ═══════════════════════════════════════════════════════════════════════════════
+\section{User Testing}
+% ═══════════════════════════════════════════════════════════════════════════════
+
+\subsection{Testing Approach}
+
+User testing was conducted informally during iterative development, following a
+\textbf{think-aloud} methodology with the primary stakeholder (analyst role).
+Feedback was collected in real-time conversation and incorporated into the
+next build iteration.
+
+\subsection{Test Sessions}
+
+\begin{table}[H]
+\centering\small
+\begin{tabular}{p{3cm}p{3cm}p{7cm}}
+\toprule
+\textbf{Session} & \textbf{Role} & \textbf{Focus Area} \\
+\midrule
+Session 1 & Data Analyst    & Dashboard navigation, Action Center readability \\
+Session 2 & Data Analyst    & Segment Explorer cards — layout, metric selection \\
+Session 3 & Data Analyst    & Chart aesthetics, color scheme, data interpretation \\
+Session 4 & Data Analyst    & Cross-tab navigation from segment pills \\
+\bottomrule
+\end{tabular}
+\caption{User testing sessions}
+\end{table}
+
+\subsection{Findings \& Resolutions}
+
+\begin{enumerate}[leftmargin=1.5cm]
+  \item \textbf{Missing Segment Explorer} — The Champions segment card was not
+    rendering due to \texttt{NaN} values causing JSON serialisation failure in
+    \texttt{/api/segments}. \textit{Resolution:} Added server-side NaN
+    sanitisation in \texttt{app.py} before \texttt{jsonify()}.
+
+  \item \textbf{Portfolio value not meaningful} — The aggregate portfolio sum
+    displayed per segment card was not interpretable at the cohort level.
+    \textit{Resolution:} Replaced with a \textbf{Share \%} metric showing each
+    segment's proportion of the total 1{,}200-account base.
+
+  \item \textbf{Segment card colour overload} — Colour-coded cards distracted
+    from data; the analyst preferred a neutral, professional appearance.
+    \textit{Resolution:} Refactored to a Salesforce Lightning–inspired neutral
+    gray palette with blue accents.
+
+  \item \textbf{Inconsistent chart colours} — Charts used a mixed palette that
+    hindered comparison across charts.
+    \textit{Resolution:} Unified all 8 charts to a single blue-gradient theme
+    (white $\to$ dark blue) applied consistently in \texttt{createCharts()}.
+
+  \item \textbf{Segment-to-account navigation} — Users expected clicking on a
+    top account pill in a segment card to jump to that account.
+    \textit{Resolution:} Implemented \texttt{inspectAccount(accountId)} in
+    \texttt{script.js} — switches tab, applies filter, and opens detail panel.
+\end{enumerate}
+
+\subsection{Outstanding UX Items}
+
+\begin{itemize}[leftmargin=1.5cm, noitemsep]
+  \item Mobile-responsive layout not yet tested (desktop-first design)
+  \item Accessibility audit (WCAG 2.1 AA) not completed
+  \item Executive role — strategic overview tab requires dedicated user testing
+\end{itemize}
+
+% ═══════════════════════════════════════════════════════════════════════════════
+\section{Design Trade-offs}
+% ═══════════════════════════════════════════════════════════════════════════════
+
+\begin{table}[H]
+\centering\small
+\begin{tabular}{p{3.5cm}p{5cm}p{4.5cm}}
+\toprule
+\textbf{Decision} & \textbf{Chosen Approach} & \textbf{Alternative / Trade-off} \\
+\midrule
+Model selection
+  & XGBoost regressor (best MAE/R²)
+  & Neural network could capture more complex patterns but requires more data and is less interpretable \\
+\midrule
+XAI method
+  & Approximate feature importance (Z-score + XGBoost weights)
+  & Full SHAP values are more rigorous but add significant per-request latency ($\sim$200–500ms) \\
+\midrule
+Frontend framework
+  & Vanilla JS + Chart.js
+  & React/Vue would improve maintainability at scale; vanilla JS reduces complexity for a single-user tool \\
+\midrule
+Data persistence
+  & In-memory cache (\texttt{data\_cache} dict)
+  & A database (SQLite/PostgreSQL) would enable multi-user concurrency but adds infrastructure overhead \\
+\midrule
+Churn integration
+  & Pre-computed CSV (\texttt{step\_08\_churn\_output.csv})
+  & Real-time classifier inference at request time is more accurate but adds model-loading latency \\
+\midrule
+Tier thresholds
+  & Percentile-based (5 000 / 25 000 Kč)
+  & Revenue-optimised thresholds via grid search could improve tier accuracy but reduce business interpretability \\
+\midrule
+Deployment server
+  & Flask dev server (single-threaded)
+  & Gunicorn (included in \texttt{requirements.txt}) for production; dev server is not safe for concurrent users \\
+\midrule
+Non-buyers in model
+  & Included (639 accounts with CLV = 0)
+  & Excluding them improves R² on active buyers (0.383 vs 0.521) but risks under-predicting dormant accounts \\
+\bottomrule
+\end{tabular}
+\caption{Key design decisions and trade-offs}
+\end{table}
+
+% ═══════════════════════════════════════════════════════════════════════════════
+\section{Deployment Recommendations}
+% ═══════════════════════════════════════════════════════════════════════════════
+
+\subsection{Minimum Viable Production Setup}
+
+\begin{enumerate}[leftmargin=1.5cm]
+  \item \textbf{Application server} — Replace the Flask development server with
+    \textbf{Gunicorn} (already in \texttt{requirements.txt}):
+\begin{lstlisting}
+gunicorn -w 4 -b 0.0.0.0:8000 app:app
+\end{lstlisting}
+    Use \textbf{nginx} as a reverse proxy with TLS termination.
+
+  \item \textbf{Environment variables} — Move all paths and any secrets to
+    environment variables or a \texttt{.env} file; do not hardcode paths.
+
+  \item \textbf{Model versioning} — Tag serialised model files with a timestamp
+    or git commit SHA (e.g., \texttt{xgboost\_clv\_v20250101.pkl}) to allow
+    rollback.
+
+  \item \textbf{Data refresh schedule} — Re-run notebooks \texttt{krok\_01}
+    through \texttt{krok\_08} monthly or after each CRM data export to keep
+    predictions current. Automate with a cron job or Airflow DAG.
+
+  \item \textbf{Access control} — The current application has no authentication.
+    Wrap behind an SSO provider (e.g., Salesforce OAuth, Azure AD) before
+    exposing to broader business users.
+\end{enumerate}
+
+\subsection{Recommended Production Architecture}
+
+\begin{figure}[H]
+  \caption{Production Architecture Diagram — Placeholder}
+  \diagramplaceholder{14}{5}
+  \label{fig:prod_arch}
+\end{figure}
+
+\begin{description}[leftmargin=1.5cm]
+  \item[Tier 1 — CDN / Load Balancer] nginx with TLS; static assets
+    (\texttt{style.css}, \texttt{script.js}) served from CDN.
+  \item[Tier 2 — Application Server] Gunicorn + Flask on a Linux VM or
+    container (Docker recommended); 4 workers for concurrency.
+  \item[Tier 3 — Data / Model Store] Models and CSVs on a shared volume
+    or object storage (e.g., Azure Blob, AWS S3). Long-term: migrate to a
+    relational database (PostgreSQL) for account data.
+  \item[Tier 4 — Batch Pipeline] Jupyter notebooks orchestrated via
+    Airflow or Azure Data Factory, triggered monthly on new CRM exports.
+\end{description}
+
+\subsection{Scaling Considerations}
+
+\begin{itemize}[leftmargin=1.5cm, noitemsep]
+  \item \textbf{Read performance}: The current in-memory \texttt{data\_cache}
+    dict works well for a single-user dashboard ($<$ 5 concurrent users). For
+    more users, move to Redis or a relational store.
+  \item \textbf{Model retraining}: At 1{,}200 accounts, full retraining takes
+    $\sim$60--90 seconds. As the dataset grows, consider incremental learning or
+    dedicated ML infrastructure (MLflow + a training VM).
+  \item \textbf{Monitoring}: Add logging to a structured sink (e.g., ELK stack
+    or Azure Monitor) to track API latency, prediction drift, and error rates.
+\end{itemize}
+
+\subsection{Security Checklist}
+
+\begin{itemize}[leftmargin=1.5cm, noitemsep]
+  \item[$\square$] TLS/HTTPS enforced on all endpoints
+  \item[$\square$] Authentication \& role-based access (Analyst / Executive / Admin)
+  \item[$\square$] CORS restricted to known origins (remove wildcard \texttt{*})
+  \item[$\square$] Input validation on \texttt{/api/simulate} payload
+  \item[$\square$] CSV files stored outside web root or in private object storage
+  \item[$\square$] Dependency audit (\texttt{pip-audit}) run before each release
+\end{itemize}
+
+% ═══════════════════════════════════════════════════════════════════════════════
+\section{Appendix A — Data Dictionary}
+% ═══════════════════════════════════════════════════════════════════════════════
+
+\begin{longtable}{p{4.5cm}p{3.5cm}p{5cm}}
+\toprule
+\textbf{Field} & \textbf{Source} & \textbf{Description} \\
+\midrule
+\endhead
+account\_external\_id & Account.csv & Primary key, e.g.\ \texttt{ACC-00001} \\
+loyalty\_tier\_label  & Account.csv & Current CRM tier: Bronze / Silver / Gold \\
+clv\_2025             & step\_02\_features.csv & Actual 2025 revenue (Kč) — training target \\
+clv\_2025\_predicted  & Model output & XGBoost regression prediction (Kč) \\
+churn\_probability    & step\_08\_churn\_output.csv & $P(\text{churn}) \in [0,1]$ \\
+churn\_risk           & Derived & Low / Medium / High (thresholds: 35\%, 65\%) \\
+suggested\_tier       & Derived & Bronze / Silver / Gold from predicted CLV \\
+tier\_match           & Derived & Boolean — actual tier = suggested tier \\
+recency\_days         & step\_02\_features.csv & Days since last purchase \\
+frequency             & step\_02\_features.csv & Number of purchase events \\
+monetary\_total       & step\_02\_features.csv & Total historical spend (Kč) \\
+spend\_trend\_1y      & step\_02\_features.csv & YoY spend change (ratio) \\
+email\_open\_rate     & Activity\_\_c.csv & Campaign email open rate (\%) \\
+app\_usage\_score     & Activity\_\_c.csv & Normalised mobile app engagement score \\
+\bottomrule
+\caption{Key data dictionary (selected fields)}
+\end{longtable}
+
+% ═══════════════════════════════════════════════════════════════════════════════
+\section{Appendix B — Segment Output Example}
+% ═══════════════════════════════════════════════════════════════════════════════
+
+\begin{table}[H]
+\centering\small
+\begin{tabular}{lrrrr}
+\toprule
+\textbf{Segment} & \textbf{Accounts} & \textbf{Avg CLV (Kč)} & \textbf{Share (\%)} \\
+\midrule
+Champions              & 58  & 62{,}410 & 4.8 \\
+High-Value At-Risk     & 6   & 9{,}790  & 0.5 \\
+Loyal Mid-Tier         & 287 & 11{,}240 & 23.9 \\
+Dormant High-Potential & 213 & 8{,}520  & 17.8 \\
+Growing New            & 134 & 7{,}830  & 11.2 \\
+\bottomrule
+\end{tabular}
+\caption{Representative segment output (values approximate)}
+\end{table}
+
+% ─── End ──────────────────────────────────────────────────────────────────────
+\vfill
+\begin{center}
+  \color{sfgray}\small
+  CLV Prediction Platform — Technical Report v1.0 · \today \\
+  Confidential — Internal Use Only
+\end{center}
+
+\end{document}
