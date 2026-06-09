@@ -1,0 +1,2 @@
+model,MAE,RMSE,R2,MAE_active,R2_active
+XGBoost,8412.0,16217.0,0.4768,14546.0,0.3149

@@ -1,0 +1,2 @@
+model,MAE,RMSE,R2,MAE_active,R2_active
+RandomForest,8401.0,16209.0,0.4773,14146.0,0.3278

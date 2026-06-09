@@ -3,15 +3,10 @@ dataset.xlsx
 *.xlsx
 *.xls
 
-# Zdrojová CSV data (raw source data — sensitive)
-csv/
 
 # Trénované modely (large binary files — reproducible)
 models/*.pkl
 
-# Výstupy notebooků (generated CSV outputs — reproducible)
-outputs/
-notebooks/outputs/
 
 # Python
 **/__pycache__/

@@ -1,0 +1,4 @@
+﻿clv_segment,Počet_zákazníků,Prům_pred_CLV,Medián_pred_CLV,Prům_skutečný_CLV,Celková_pred_hodnota,Prům_frequency,Prům_recency_dny,Prům_útrata_22_24,Prům_app_score,Prům_email_open
+High,135,53024.2,43194.7,56193.2,7158265.9,6.9,118.5,52318.9,64.4,0.5
+Medium,321,12777.8,12214.2,12760.6,4101686.7,4.9,172.7,29330.1,47.2,0.3
+Low,744,848.6,321.4,887.5,631390.4,6.5,411.3,39467.2,45.2,0.3
