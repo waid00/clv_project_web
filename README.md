@@ -1,76 +1,76 @@
 # CLV Prediction 2025 — Customer Lifetime Value & Churn Pipeline with Web Dashboard
 
-End-to-end datový projekt pro B2C retail zaměřený na predikci Customer Lifetime Value (CLV) pro rok 2025, predikci rizika churnu a pokročilou segmentaci zákazníků. Součástí projektu je produkční webový dashboard postavený nad frameworkem Flask integrovaný s Salesforce CRM datovou strukturou.
+An end-to-end data project for B2C retail focused on predicting Customer Lifetime Value (CLV) for 2025, churn risk prediction, and advanced customer segmentation. The project includes a production web dashboard built on the Flask framework integrated with the Salesforce CRM data structure.
 
-Pipeline zpracovává historická data z let 2022–2024 a predikuje budoucí revenue zákazníka v roce 2025. Výstupy jsou rizikově očištěny o pravděpodobnost churnu, rozřazeny do věrnostních tierů a interpretovány pomocí přibližného feature-level XAI.
+The pipeline processes historical data from 2022–2024 and predicts future customer revenue in 2025. The outputs are risk-adjusted by the probability of churn, categorized into loyalty tiers, and interpreted using approximate feature-level XAI.
 
 ---
 
-# Výsledky modelů
+# Model Results
 
-## Regrese — predikce výše CLV 2025
+## Regression — CLV 2025 Value Prediction
 
-*Regresní modely jsou trénovány na 80 % dat a evaluovány na 20 % testovacím subsetu.*
+*Regression models are trained on 80% of the data and evaluated on a 20% test subset.*
 
-| Model                       | MAE          | RMSE          | R²        | MAE (aktivní) | R² (aktivní) |
+| Model                       | MAE          | RMSE          | R²        | MAE (active)  | R² (active)  |
 | --------------------------- | ------------ | ------------- | --------- | ------------- | ------------ |
-| Lineární regrese (baseline) | 9 708 Kč     | 17 101 Kč     | 0.418     | 15 185 Kč     | 0.274        |
-| Random Forest (tuned)       | 8 406 Kč     | 16 212 Kč     | 0.477     | 14 153 Kč     | 0.328        |
-| **XGBoost (tuned) ✅**       | **8 172 Kč** | **15 512 Kč** | **0.521** | **13 888 Kč** | **0.383**    |
+| Linear Regression (baseline)| 9,708 CZK    | 17,101 CZK    | 0.418     | 15,185 CZK    | 0.274        |
+| Random Forest (tuned)       | 8,406 CZK    | 16,212 CZK    | 0.477     | 14,153 CZK    | 0.328        |
+| **XGBoost (tuned) ✅**       | **8,172 CZK**| **15,512 CZK**| **0.521** | **13,888 CZK**| **0.383**    |
 
-*Poznámka ke GridSearch: Nejlepší parametry pro finální XGBoost Regressor zahrnují `n_estimators=300`, `max_depth=6` a `learning_rate=0.05`.*
+*Note on GridSearch: Best parameters for the final XGBoost Regressor include `n_estimators=300`, `max_depth=6`, and `learning_rate=0.05`.*
 
-## Klasifikace — nakoupí zákazník v roce 2025?
+## Classification — Will the customer purchase in 2025?
 
 | Model              | Accuracy | Precision | Recall | F1     | ROC-AUC   |
 | ------------------ | -------- | --------- | ------ | ------ | --------- |
-| Logistická regrese | 81.3 %   | 80.2 %    | 79.5 % | 79.8 % | **0.910** |
+| Logistic Regression| 81.3%    | 80.2%     | 79.5%  | 79.8%  | **0.910** |
 
-## Churn Prediction — odejde zákazník?
+## Churn Prediction — Will the customer churn?
 
 | Model                         | ROC-AUC   | F1        | Accuracy   | Precision  | Recall     |
 | ----------------------------- | --------- | --------- | ---------- | ---------- | ---------- |
-| Logistická regrese (baseline) | 0.853     | 0.725     | 77.4 %     | 76.0 %     | 69.4 %     |
-| **XGBoost (tuned) ✅**         | **0.883** | **0.746** | **79.8 %** | **80.7 %** | **69.4 %** |
+| Logistic Regression (baseline)| 0.853     | 0.725     | 77.4%      | 76.0%      | 69.4%      |
+| **XGBoost (tuned) ✅**         | **0.883** | **0.746** | **79.8%**  | **80.7%**  | **69.4%**  |
 
-## Segmentace zákazníků podle hodnoty (XGBoost predikce, n = 1 200)
+## Customer Segmentation by Value (XGBoost predictions, n = 1,200)
 
-| Věrnostní Tier | Prahová hodnota (Kč) | Počet | Podíl  | Prům. predikovaný CLV | Prům. recency |
-| -------------- | -------------------- | ----- | ------ | --------------------- | ------------- |
-| **Gold**       | ≥ 25 000             | 139   | 11.6 % | 53 536 Kč             | 116 dní       |
-| **Silver**     | 5 000 – 25 000       | 315   | 26.3 % | 12 818 Kč             | 187 dní       |
-| **Bronze**     | < 5 000              | 746   | 62.2 % | 660 Kč                | 405 dní       |
+| Loyalty Tier | Threshold (CZK) | Count | Share  | Avg. Predicted CLV | Avg. Recency |
+| ------------ | --------------- | ----- | ------ | ------------------ | ------------ |
+| **Gold**     | ≥ 25,000        | 139   | 11.6%  | 53,536 CZK         | 116 days     |
+| **Silver**   | 5,000 – 25,000  | 315   | 26.3%  | 12,818 CZK         | 187 days     |
+| **Bronze**   | < 5,000         | 746   | 62.2%  | 660 CZK            | 405 days     |
 
 ---
 
-# Hlavní funkce webové aplikace (Flask App)
+# Main Features of the Web Application (Flask App)
 
-1. **Interaktivní Dashboard & CRM Integrace**
-   Kompletní tabulka zákaznických účtů (Account data) propojená s vypočtenými behaviorálními features v reálném čase.
+1. **Interactive Dashboard & CRM Integration**
+   A complete customer account table (Account data) linked with calculated behavioral features in real-time.
 
-2. **Spouštění XGBoost Pipeline na kliknutí**
-   Automatické natrénování modelu (pokud neexistuje), automatické ošetření chybějících hodnot (mediánová imputace) a winsorizace extrémních trendových hodnot na 99. percentilu.
+2. **One-Click XGBoost Pipeline Execution**
+   Automatic model training (if it doesn't exist), automatic handling of missing values (median imputation), and winsorization of extreme trend values at the 99th percentile.
 
-3. **Rizikově očištěné CLV**
-   Predikované revenue je dynamicky penalizováno na základě výstupů churn modelu podle vzorce:
+3. **Risk-Adjusted CLV**
+   Predicted revenue is dynamically penalized based on the churn model outputs according to the formula:
 
    `CLV_predicted × (1 − P(churn))`
 
-4. **Co-Pilot pro simulace scénářů**
-   Možnost upravovat vybrané metriky (engagement, open rate, frekvence nákupů) pro konkrétního zákazníka a simulovat dopad změn na jeho budoucí CLV.
+4. **Co-Pilot for Scenario Simulations**
+   Ability to modify selected metrics (engagement, open rate, purchase frequency) for a specific customer and simulate the impact of these changes on their future CLV.
 
-5. **Vysvětlitelné AI (XAI)**
-   Generování top-3 klíčových driverů (pozitivních i negativních) stojících za predikcí pro každý jednotlivý účet na základě relativních Z-score a důležitosti features.
+5. **Explainable AI (XAI)**
+   Generation of the top 3 key drivers (positive and negative) behind the prediction for each individual account based on relative Z-scores and feature importances.
 
-6. **Pokročilé marketingové segmenty**
-   Výpočet specifických kohort jako *Champions*, *High-Value at Risk*, *Loyal Mid-Tier*, *Dormant High-Potential* a *Growing New* kombinací RFM a rizikových metrik.
+6. **Advanced Marketing Segments**
+   Calculation of specific cohorts such as *Champions*, *High-Value at Risk*, *Loyal Mid-Tier*, *Dormant High-Potential*, and *Growing New* by combining RFM and risk metrics.
 
-7. **Exporty dat**
-   Možnost uložení finálních predikcí do CSV formátu pro přímý import zpět do Salesforce CRM.
+7. **Data Exports**
+   Option to export final predictions to CSV format for direct import back into Salesforce CRM.
 
 ---
 
-# Struktura projektu
+# Project Structure
 
 ```text
 clv_project/
@@ -118,22 +118,22 @@ clv_project/
 
 ---
 
-# Tok dat a architektura
+# Data Flow and Architecture
 
 ```text
-[ CRM Zdrojová data: csv/ ]
+[ CRM Source Data: csv/ ]
 (Account, Order__c, Activity__c, Product2)
 │
 ▼
-Krok 1: Jupyter EDA ──► Generování step_01_*.csv
+Step 1: Jupyter EDA ──► Generation of step_01_*.csv
 │
 ▼
-Krok 2: Feature Engineering ──► step_02_features.csv
+Step 2: Feature Engineering ──► step_02_features.csv
 │
 ├───────────────────────────────────────┐
 ▼                                       ▼
-[ Kroky 3–6: Regrese ]             [ Krok 4 & 8: Churn ]
-(XGBoost model)                    (Výpočet P(churn))
+[ Steps 3–6: Regression ]          [ Step 4 & 8: Churn ]
+(XGBoost model)                    (P(churn) Calculation)
 │                                       │
 └───────────────────┬───────────────────┘
                     │
@@ -148,40 +148,40 @@ Krok 2: Feature Engineering ──► step_02_features.csv
 
 ---
 
-# Vstupní datová struktura (CRM Data)
+# Input Data Structure (CRM Data)
 
-Projekt přímo mapuje standardní objekty ze Salesforce CRM:
+The project maps standard objects from Salesforce CRM directly:
 
-* **Account** – informace o klientovi (věk, region, věrnostní status, akviziční kanál). *(1 200 entit)*
-* **Order__c** – historické transakce (finální cena, sleva, produkt, stav objednávky). *(~9 500 řádků)*
-* **Activity__c** – digitální stopa klienta (přihlášení, otevření e-mailů, skóre aplikace). *(1 200 entit)*
-* **Product2** – produktové portfolio (kategorie, cena, náklady). *(72 záznamů)*
+* **Account** – client information (age, region, loyalty status, acquisition channel). *(1,200 entities)*
+* **Order__c** – historical transactions (final price, discount, product, order status). *(~9,500 rows)*
+* **Activity__c** – client's digital footprint (logins, email open rate, app usage score). *(1,200 entities)*
+* **Product2** – product portfolio (category, price, cost). *(72 records)*
 
 ---
 
-# Použité Features pro predikci CLV
+# Features Used for CLV Prediction
 
-Model využívá 29 analytických příznaků:
+The model uses 29 analytical features:
 
-## RFM indikátory
+## RFM Indicators
 
 * `recency_days`
 * `frequency`
 * `monetary_total`
 * `monetary_avg`
 
-## Historické spendy
+## Historical Spend
 
 * `spend_2022`
 * `spend_2023`
 * `spend_2024`
 
-## Trendy
+## Trends
 
 * `spend_trend_2y`
 * `spend_trend_1y`
 
-## Digitální engagement
+## Digital Engagement
 
 * `login_count_30d`
 * `login_count_90d`
@@ -189,19 +189,19 @@ Model využívá 29 analytických příznaků:
 * `app_usage_score`
 * `days_since_login`
 
-## Zákaznický profil
+## Customer Profile
 
 * `age`
 * `tenure_days`
 * `category_diversity`
-* preferované kanály
-* status odběru kampaní
+* preferred channels
+* campaign subscription status
 
 ---
 
-# API dokumentace
+# API Documentation
 
-## 1. Získání klientských dat
+## 1. Get Client Data
 
 **Endpoint**
 
@@ -209,13 +209,13 @@ Model využívá 29 analytických příznaků:
 GET /api/accounts
 ```
 
-**Popis**
+**Description**
 
-Vrátí seznam všech zákazníků obohacený o behaviorální features, pravděpodobnost churnu a predikci CLV.
+Returns a list of all customers enriched with behavioral features, churn probability, and CLV prediction.
 
 ---
 
-## 2. Spuštění predikční pipeline
+## 2. Run Prediction Pipeline
 
 **Endpoint**
 
@@ -223,13 +223,13 @@ Vrátí seznam všech zákazníků obohacený o behaviorální features, pravdě
 POST /api/predict
 ```
 
-**Popis**
+**Description**
 
-Inicializuje trénink nebo načtení XGBoost modelu, provede predikci pro celé portfolio a aplikuje rizikové očištění podle churn skóre.
+Initializes the training or loading of the XGBoost model, runs predictions for the entire portfolio, and applies risk-adjustments based on the churn score.
 
 ---
 
-## 3. Simulace Co-Pilot scénářů
+## 3. Co-Pilot Scenario Simulation
 
 **Endpoint**
 
@@ -248,13 +248,13 @@ POST /api/simulate
 }
 ```
 
-**Popis**
+**Description**
 
-Přepíše vybrané metriky konkrétního zákazníka, přepočítá predikci in-memory a vrátí simulovaný dopad na CLV.
+Overrides selected metrics for a specific customer, recalculates the prediction in-memory, and returns the simulated impact on CLV.
 
 ---
 
-## 4. Klientské vysvětlení (XAI)
+## 4. Client Explanation (XAI)
 
 **Endpoint**
 
@@ -262,13 +262,13 @@ Přepíše vybrané metriky konkrétního zákazníka, přepočítá predikci in
 GET /api/explain/<account_id>
 ```
 
-**Popis**
+**Description**
 
-Identifikuje top-3 nejsilnější faktory ovlivňující výsledné CLV porovnáním s mediánem populace a vahami příznaků v XGBoost modelu.
+Identifies the top 3 strongest factors influencing the final CLV by comparing against the population median and feature weights in the XGBoost model.
 
 ---
 
-## 5. Pokročilé segmenty
+## 5. Advanced Segments
 
 **Endpoint**
 
@@ -276,9 +276,9 @@ Identifikuje top-3 nejsilnější faktory ovlivňující výsledné CLV porovná
 GET /api/segments
 ```
 
-**Popis**
+**Description**
 
-Rozřadí zákazníky do mikrosegmentů, například:
+Categorizes customers into micro-segments, for example:
 
 * High-Value at Risk
 * Champions
@@ -288,22 +288,22 @@ Rozřadí zákazníky do mikrosegmentů, například:
 
 ---
 
-# Rychlý start
+# Quick Start
 
-## Technické požadavky
+## Technical Requirements
 
 * Python 3.11+
-* Moderní webový prohlížeč s podporou JavaScriptu a HTML5
+* Modern web browser with JavaScript and HTML5 support
 
-## Instalace
+## Installation
 
 ```bash
-git clone https://github.com/<tvůj-username>/clv_project.git
+git clone https://github.com/<your-username>/clv_project.git
 cd clv_project
 pip install -r requirements.txt
 ```
 
-## Spuštění aplikace
+## Running the Application
 
 ### Windows
 
@@ -323,7 +323,7 @@ start_app.bat
 python app.py
 ```
 
-Aplikace poběží na:
+The application will run on:
 
 ```text
 http://localhost:5000
@@ -331,45 +331,45 @@ http://localhost:5000
 
 ---
 
-# Poznámka k inicializaci
+# Note on Initialization
 
-Při prvním spuštění a kliknutí na **Run XGBoost Model** se spustí trénovací cyklus, který může trvat 1–2 minuty.
+When running for the first time and clicking **Run XGBoost Model**, the training cycle starts, which may take 1–2 minutes.
 
-Další spuštění využívají serializované modely uložené ve složce `models/` a trvají pouze řádově milisekundy.
+Subsequent runs use serialized models stored in the `models/` folder and only take milliseconds.
 
 ---
 
-# Konvence vývoje a prostředí
+# Development Conventions and Environment
 
-## Reprodukovatelnost
+## Reproducibility
 
 ```python
 RANDOM_STATE = 42
 ```
 
-Používá se napříč všemi skripty a notebooky.
+Used across all scripts and notebooks.
 
-## Kódový standard
+## Coding Standard
 
-* Názvy proměnných v angličtině (`snake_case`)
-* Komentáře česky/slovensky
-* Formátování pomocí Black Formatter
-* Maximálně 88 znaků na řádek
+* Variable names in English (`snake_case`)
+* Comments in Czech/Slovak
+* Formatting using Black Formatter
+* Maximum of 88 characters per line
 
-## Vizualizace
+## Visualization
 
-### Notebooky a backend
+### Notebooks and backend
 
 * seaborn
 * matplotlib
 
-### Webová aplikace
+### Web application
 
 * Chart.js
 
 ---
 
-# Technologický stack
+# Technology Stack
 
 * Flask
 * XGBoost
@@ -379,4 +379,4 @@ Používá se napříč všemi skripty a notebooky.
 
 ---
 
-*Vytvořeno jako CLV Prediction Project (2025/2026).*
+*Created as CLV Prediction Project (2025/2026).*
