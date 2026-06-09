@@ -1731,6 +1731,9 @@ function switchTab(tabName) {
         if (charts.tier) charts.tier.resize();
         if (charts.historicalVsPredicted) charts.historicalVsPredicted.resize();
         if (charts.cohortAnalysis) charts.cohortAnalysis.resize();
+        // Re-trigger segment explorer if predictions are loaded
+        const hasPreds = accountsData.some(a => a.clv_2025_predicted !== null && a.clv_2025_predicted !== undefined);
+        if (hasPreds) loadSegments();
     } else if (tabName === 'performance') {
         if (charts.error) charts.error.resize();
         if (charts.scatter) charts.scatter.resize();
@@ -2185,6 +2188,13 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeActionCenterClicks();
     initCampaignBuilder();
     loadAccounts();
+
+    // Fallback: if predictions were already loaded (e.g. after a page refresh),
+    // ensure the segment explorer appears once data is fully in place.
+    setTimeout(() => {
+        const hasPreds = accountsData.some(a => a.clv_2025_predicted !== null && a.clv_2025_predicted !== undefined);
+        if (hasPreds) loadSegments();
+    }, 3000);
 });
 
 

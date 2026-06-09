@@ -1040,6 +1040,25 @@ body {
     display: grid;
     grid-template-columns: 1fr 1.2fr;
     gap: 18px;
+    align-items: stretch;
+    margin-bottom: 18px;
+}
+/* Error chart body stretches to match diagnostics card height */
+.perf-chart-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+.perf-chart-body .chart-container {
+    flex: 1;
+    height: auto;
+    min-height: 300px;
+}
+/* Bottom row: 3 charts equal-width */
+.performance-charts-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
 }
 .model-params-table {
     display: flex; flex-direction: column;

@@ -763,10 +763,11 @@
                 </div>
             </div>
 
+            <!-- Top row: Diagnostics (left) + Error Distribution (right) -->
             <div class="performance-layout">
                 
                 <!-- Metrics and Params -->
-                <div class="lightning-card">
+                <div class="lightning-card" style="margin-bottom: 0;">
                     <div class="lightning-card__header">
                         <div class="lightning-card__header-title">
                             <span class="lightning-card__header-icon">
@@ -832,7 +833,7 @@
                 </div>
 
                 <!-- Error Plot -->
-                <div class="lightning-card">
+                <div class="lightning-card" style="margin-bottom: 0;">
                     <div class="lightning-card__header">
                         <div class="lightning-card__header-title">
                         <span class="lightning-card__header-icon">
@@ -845,15 +846,20 @@
                         <h2>Prediction Error Distribution</h2>
                     </div>
                     </div>
-                    <div class="lightning-card__body">
+                    <div class="lightning-card__body perf-chart-body">
                         <div class="chart-container">
                             <canvas id="errorChart"></canvas>
                         </div>
                     </div>
                 </div>
 
+            </div>
+
+            <!-- Bottom row: 3 charts side by side -->
+            <div class="performance-charts-row">
+
                 <!-- Feature Importance Chart -->
-                <div class="lightning-card">
+                <div class="lightning-card" style="margin-bottom: 0;">
                     <div class="lightning-card__header">
                         <div class="lightning-card__header-title">
                         <span class="lightning-card__header-icon">
@@ -874,7 +880,7 @@
                 </div>
 
                 <!-- Actual vs Predicted Scatter Chart -->
-                <div class="lightning-card">
+                <div class="lightning-card" style="margin-bottom: 0;">
                     <div class="lightning-card__header">
                         <div class="lightning-card__header-title">
                         <span class="lightning-card__header-icon">
@@ -894,7 +900,7 @@
                 </div>
 
                 <!-- CLV Distribution Histogram Chart -->
-                <div class="lightning-card">
+                <div class="lightning-card" style="margin-bottom: 0;">
                     <div class="lightning-card__header">
                         <div class="lightning-card__header-title">
                         <span class="lightning-card__header-icon">

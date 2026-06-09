@@ -683,11 +683,11 @@ def get_segments():
             }
 
             # Priority: first matching bucket wins
-            if tier == "Gold" and churn_risk == "Low" and frequency > median_frequency and recency < 90:
+            if tier == "Gold" and churn_risk == "Low" and frequency > median_frequency and recency < 180:
                 buckets["champions"].append(record)
             elif tier in ["Gold", "Silver"] and churn_risk in ["High", "Medium"]:
                 buckets["high_value_at_risk"].append(record)
-            elif tier in ["Silver", "Bronze"] and churn_risk == "Low" and frequency > 3:
+            elif tier in ["Silver", "Bronze"] and churn_risk == "Low" and frequency >= 2:
                 buckets["loyal_mid_tier"].append(record)
             elif monetary > median_monetary and recency > 180:
                 buckets["dormant_high_potential"].append(record)
